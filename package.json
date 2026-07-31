@@ -1,0 +1,46 @@
+{
+  "name": "visual-html-editor",
+  "displayName": "Visual HTML Editor",
+  "description": "Visually edit rendered HTML files directly in VS Code and press Ctrl+S to save changes back to source code.",
+  "version": "0.0.1",
+  "publisher": "hao-ngo",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hao-ngo/vscode-visual-html-editor"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:visual-html-editor.open"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "visual-html-editor.open",
+        "title": "Visual HTML Editor: Open Visual Editor",
+        "category": "HTML"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "visual-html-editor.open",
+          "when": "resourceExtname == .html",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "visual-html-editor.open",
+          "when": "resourceExtname == .html",
+          "group": "navigation"
+        }
+      ]
+    }
+  }
+}
