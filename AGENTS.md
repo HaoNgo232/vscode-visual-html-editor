@@ -4,9 +4,10 @@ Instructions and guidelines for AI agents and human developers modifying or exte
 
 ---
 
-## Project Overview
+## Workspace Context & Cross-References
 
-**Visual HTML Editor** is a lightweight, privacy-focused VS Code extension built with **TypeScript** and **Bun** to allow users to visually edit rendered static HTML files directly inside VS Code and save changes back to source files using `Ctrl + S`.
+- **Parent Workspace Context**: This repository operates alongside the CV Generator workspace. See main workspace instructions at [`/home/hao/Desktop/labs/CV/AGENTS.md`](file:///home/hao/Desktop/labs/CV/AGENTS.md).
+- **Extension Repository**: Located at [`/home/hao/Desktop/labs/vscode-visual-html-editor`](file:///home/hao/Desktop/labs/vscode-visual-html-editor).
 
 ---
 
@@ -25,13 +26,16 @@ Instructions and guidelines for AI agents and human developers modifying or exte
    - Communicate with the user in **Vietnamese**.
    - Maintain all code, comments, documentation (`README.md`, `ARCHITECTURE.md`, `PROGRESS.md`), and commit/packaging metadata in **English**.
 
-2. **Safety & Security Constraints**:
+2. **Documentation Efficiency**:
+   - Keep `PROGRESS.md` concise, token-efficient, and high-density (use tables and short bullet points). Avoid verbose logs to save context tokens for subagents.
+
+3. **Safety & Security Constraints**:
    - Never execute untrusted scripts inside the extension host context.
    - Maintain webview sandbox boundaries (`enableScripts: true`, `retainContextWhenHidden: true`).
    - Sanitize or pass document content safely using `JSON.stringify()` & script escaping (`\u003c`) when generating webview HTML.
    - Do **NOT** introduce telemetry, remote network requests, or external tracking dependencies.
 
-3. **Code Modification Rules**:
+4. **Code Modification Rules**:
    - Keep the codebase modular (`src/utils/`, `src/webview/`, `src/extension.ts`).
    - Before saving to disk, ensure transient styles (such as `style="zoom: ..."` applied during live preview) are temporarily stripped so source files are not polluted.
    - Always run unit tests (`bun test`) and compilation (`bun run build`) before packaging.
