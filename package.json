@@ -9,8 +9,15 @@
     "url": "https://github.com/hao-ngo/vscode-visual-html-editor"
   },
   "scripts": {
-    "test": "node --test test/*.test.js",
-    "package": "npx @vscode/vsce package --no-dependencies"
+    "build": "bun build src/extension.ts --outdir dist --target node --external vscode",
+    "test": "bun test",
+    "package": "bun run build && npx @vscode/vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.75.0",
+    "bun-types": "latest",
+    "typescript": "^5.0.0"
   },
   "engines": {
     "vscode": "^1.75.0"
@@ -21,7 +28,7 @@
   "activationEvents": [
     "onCommand:visual-html-editor.open"
   ],
-  "main": "./src/extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {

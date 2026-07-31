@@ -4,10 +4,18 @@ Instructions and guidelines for AI agents and human developers modifying or exte
 
 ---
 
-## Workspace Context & Cross-References
+## Project Overview
 
-- **Parent Workspace Context**: This repository operates alongside the CV Generator workspace. See main workspace instructions at [`/home/hao/Desktop/labs/CV/AGENTS.md`](file:///home/hao/Desktop/labs/CV/AGENTS.md).
-- **Extension Repository**: Located at [`/home/hao/Desktop/labs/vscode-visual-html-editor`](file:///home/hao/Desktop/labs/vscode-visual-html-editor).
+**Visual HTML Editor** is a lightweight, privacy-focused VS Code extension built with **TypeScript** and **Bun** to allow users to visually edit rendered static HTML files directly inside VS Code and save changes back to source files using `Ctrl + S`.
+
+---
+
+## Tech Stack & Tooling
+
+- **Language**: TypeScript (`src/*.ts`)
+- **Bundler & Test Runner**: Bun (`bun build`, `bun test`)
+- **Target Runtime**: VS Code Node.js Extension Host (`dist/extension.js`)
+- **Package Manager**: Bun (`bun install`)
 
 ---
 
@@ -15,31 +23,36 @@ Instructions and guidelines for AI agents and human developers modifying or exte
 
 1. **Language Policy**:
    - Communicate with the user in **Vietnamese**.
-   - Maintain all code, comments, documentation (`README.md`, `ARCHITECTURE.md`), and commit/packaging metadata in **English**.
+   - Maintain all code, comments, documentation (`README.md`, `ARCHITECTURE.md`, `PROGRESS.md`), and commit/packaging metadata in **English**.
 
 2. **Safety & Security Constraints**:
    - Never execute untrusted scripts inside the extension host context.
    - Maintain webview sandbox boundaries (`enableScripts: true`, `retainContextWhenHidden: true`).
-   - Sanitize or pass document content safely using `JSON.stringify()` when generating webview HTML.
+   - Sanitize or pass document content safely using `JSON.stringify()` & script escaping (`\u003c`) when generating webview HTML.
    - Do **NOT** introduce telemetry, remote network requests, or external tracking dependencies.
 
 3. **Code Modification Rules**:
-   - Keep the codebase modular (`src/utils`, `src/webview`, `src/extension.js`).
+   - Keep the codebase modular (`src/utils/`, `src/webview/`, `src/extension.ts`).
    - Before saving to disk, ensure transient styles (such as `style="zoom: ..."` applied during live preview) are temporarily stripped so source files are not polluted.
-   - Always run unit tests (`npm test`) before packaging.
+   - Always run unit tests (`bun test`) and compilation (`bun run build`) before packaging.
 
 ---
 
 ## Commands & Workflows
 
-### Running Unit Tests
+### Building TypeScript Source
 ```bash
-npm test
+bun run build
+```
+
+### Running Bun Unit Tests
+```bash
+bun test
 ```
 
 ### Packaging the Extension (.vsix)
 ```bash
-npm run package
+bun run package
 ```
 
 ### Installing the Packaged Extension Locally
@@ -50,6 +63,6 @@ code --install-extension visual-html-editor-0.0.1.vsix --force
 ---
 
 ## Testing Strategy
-- Unit tests reside in `test/*.test.js`.
-- Use Node.js built-in test runner (`node --test`).
+- Unit tests reside in `test/*.test.ts`.
+- Powered by `bun:test` runner (`<20ms` total execution).
 - Every new utility function added to `src/utils/` must have accompanying unit tests in `test/`.

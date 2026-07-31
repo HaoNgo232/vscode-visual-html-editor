@@ -2,21 +2,15 @@
  * Utility functions for zoom level calculations and clamping.
  */
 
-function clampZoom(zoom, min = 0.3, max = 3.0) {
+export function clampZoom(zoom: number, min: number = 0.3, max: number = 3.0): number {
   const rounded = Math.round(zoom * 100) / 100;
   return Math.max(min, Math.min(max, rounded));
 }
 
-function calculateNextZoom(currentZoom, delta, min = 0.3, max = 3.0) {
+export function calculateNextZoom(currentZoom: number, delta: number, min: number = 0.3, max: number = 3.0): number {
   return clampZoom(currentZoom + delta, min, max);
 }
 
-function formatZoomPercentage(zoom) {
+export function formatZoomPercentage(zoom: number): string {
   return `${Math.round(clampZoom(zoom) * 100)}%`;
 }
-
-module.exports = {
-  clampZoom,
-  calculateNextZoom,
-  formatZoomPercentage
-};
