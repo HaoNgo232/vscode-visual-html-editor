@@ -1,5 +1,6 @@
 /**
  * Generates the Webview HTML content for the Visual HTML Editor.
+ * Includes a robust Error Boundary & Diagnostics overlay for UI debugging.
  */
 
 function getWebviewContent(htmlContent, baseUri = null) {
@@ -121,6 +122,55 @@ function getWebviewContent(htmlContent, baseUri = null) {
       font-size: 13px;
       color: #a6adc8;
     }
+
+    /* Error Overlay */
+    .error-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(24, 24, 37, 0.95);
+      color: #f38ba8;
+      padding: 24px;
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 200;
+      overflow: auto;
+      font-family: monospace;
+    }
+    .error-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #f38ba8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .error-box {
+      background: #11111b;
+      border: 1px solid #f38ba8;
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: #cdd6f4;
+    }
+    .error-actions {
+      display: flex;
+      gap: 12px;
+    }
+    .btn-danger {
+      background: #f38ba8;
+      color: #11111b;
+    }
+    .btn-secondary {
+      background: #313244;
+      color: #cdd6f4;
+      border: 1px solid #45475a;
+    }
   </style>
 </head>
 <body>
@@ -140,26 +190,76 @@ function getWebviewContent(htmlContent, baseUri = null) {
 
   <div class="editor-container" id="editor-container">
     <iframe id="editor-frame"></iframe>
+
+    <!-- Diagnostics & Error Overlay -->
+    <div class="error-overlay" id="error-overlay">
+      <div class="error-title">⚠️ Visual HTML Editor Error Encountered</div>
+      <div class="error-box" id="error-details">Unknown error occurred.</div>
+      <div class="error-actions">
+        <button class="btn btn-secondary" onclick="dismissError()">Dismiss Overlay</button>
+        <button class="btn btn-secondary" onclick="copyErrorDetails()">📋 Copy Error Log</button>
+      </div>
+    </div>
   </div>
 
   <script>
     const vscode = acquireVsCodeApi();
     const iframe = document.getElementById('editor-frame');
     const zoomBadge = document.getElementById('zoom-badge');
+    const errorOverlay = document.getElementById('error-overlay');
+    const errorDetails = document.getElementById('error-details');
+
     const rawHTML = ${safeContent};
     const baseUri = ${safeBaseUri};
 
     let currentZoom = 1.0;
+    let lastError = '';
+
+    // Global Webview Error Boundary
+    window.onerror = function(message, source, lineno, colno, error) {
+      showError('Webview Error: ' + message + ' (' + source + ':' + lineno + ':' + colno + ')');
+      return false;
+    };
+
+    window.onunhandledrejection = function(event) {
+      showError('Unhandled Promise Rejection: ' + (event.reason ? event.reason.message || event.reason : 'Unknown reason'));
+    };
+
+    function showError(msg) {
+      console.error('[Visual HTML Editor Error]', msg);
+      lastError = msg;
+      if (errorDetails && errorOverlay) {
+        errorDetails.textContent = msg;
+        errorOverlay.style.display = 'flex';
+      }
+    }
+
+    function dismissError() {
+      if (errorOverlay) {
+        errorOverlay.style.display = 'none';
+      }
+    }
+
+    function copyErrorDetails() {
+      if (navigator.clipboard && lastError) {
+        navigator.clipboard.writeText(lastError);
+        alert('Copied error log to clipboard!');
+      }
+    }
 
     function applyZoom() {
-      currentZoom = Math.max(0.3, Math.min(3.0, Math.round(currentZoom * 100) / 100));
-      
-      const doc = iframe.contentDocument || iframe.contentWindow.document;
-      if (doc && doc.documentElement) {
-        doc.documentElement.style.zoom = currentZoom;
-      }
-      if (zoomBadge) {
-        zoomBadge.textContent = Math.round(currentZoom * 100) + '%';
+      try {
+        currentZoom = Math.max(0.3, Math.min(3.0, Math.round(currentZoom * 100) / 100));
+        
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        if (doc && doc.documentElement) {
+          doc.documentElement.style.zoom = currentZoom;
+        }
+        if (zoomBadge) {
+          zoomBadge.textContent = Math.round(currentZoom * 100) + '%';
+        }
+      } catch (err) {
+        showError('Zoom Error: ' + err.message);
       }
     }
 
@@ -201,58 +301,79 @@ function getWebviewContent(htmlContent, baseUri = null) {
     }
 
     function init() {
-      const doc = iframe.contentDocument || iframe.contentWindow.document;
-      doc.open();
-      doc.write(rawHTML);
-      doc.close();
-
-      // Inject baseUri if provided for relative asset resolution
-      if (baseUri && doc.head && !doc.querySelector('base')) {
-        const baseElem = doc.createElement('base');
-        baseElem.href = baseUri;
-        doc.head.insertBefore(baseElem, doc.head.firstChild);
-      }
-
-      setTimeout(() => {
-        doc.designMode = 'on';
-
-        doc.addEventListener('wheel', handleWheel, { passive: false });
-        doc.addEventListener('keydown', handleKeydown);
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
         
-        applyZoom();
-      }, 100);
+        // Catch iframe document write errors
+        doc.open();
+        doc.write(rawHTML);
+        doc.close();
+
+        // Inject baseUri if provided for relative asset resolution
+        if (baseUri && doc.head && !doc.querySelector('base')) {
+          const baseElem = doc.createElement('base');
+          baseElem.href = baseUri;
+          doc.head.insertBefore(baseElem, doc.head.firstChild);
+        }
+
+        // Add error boundary inside iframe window
+        if (iframe.contentWindow) {
+          iframe.contentWindow.onerror = function(msg, url, line, col, err) {
+            console.warn('[Iframe Inner Notice]', msg, url, line);
+            return false;
+          };
+        }
+
+        setTimeout(() => {
+          try {
+            doc.designMode = 'on';
+            doc.addEventListener('wheel', handleWheel, { passive: false });
+            doc.addEventListener('keydown', handleKeydown);
+            applyZoom();
+          } catch (e) {
+            showError('Design Mode Activation Error: ' + e.message);
+          }
+        }, 100);
+
+      } catch (err) {
+        showError('Failed to parse & render HTML document: ' + err.message + '\\n\\nStack:\\n' + err.stack);
+      }
     }
 
     window.addEventListener('wheel', handleWheel, { passive: false });
     window.addEventListener('keydown', handleKeydown);
 
     function save() {
-      const doc = iframe.contentDocument || iframe.contentWindow.document;
-      
-      // Strip injected base tag if we added it dynamically
-      const injectedBase = doc.querySelector('base[href="' + baseUri + '"]');
-      if (injectedBase) {
-        injectedBase.remove();
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        
+        // Strip injected base tag if we added it dynamically
+        const injectedBase = doc.querySelector('base[href="' + baseUri + '"]');
+        if (injectedBase) {
+          injectedBase.remove();
+        }
+
+        const originalZoom = doc.documentElement.style.zoom;
+        doc.documentElement.style.zoom = '';
+
+        const currentHTML = '<!DOCTYPE html>\\n' + doc.documentElement.outerHTML;
+        
+        doc.documentElement.style.zoom = originalZoom;
+
+        // Re-inject baseUri after save so preview stays functional
+        if (baseUri && doc.head && !doc.querySelector('base')) {
+          const baseElem = doc.createElement('base');
+          baseElem.href = baseUri;
+          doc.head.insertBefore(baseElem, doc.head.firstChild);
+        }
+
+        vscode.postMessage({
+          command: 'save',
+          html: currentHTML
+        });
+      } catch (err) {
+        showError('Error during Save operation: ' + err.message);
       }
-
-      const originalZoom = doc.documentElement.style.zoom;
-      doc.documentElement.style.zoom = '';
-
-      const currentHTML = '<!DOCTYPE html>\\n' + doc.documentElement.outerHTML;
-      
-      doc.documentElement.style.zoom = originalZoom;
-
-      // Re-inject baseUri after save so preview stays functional
-      if (baseUri && doc.head && !doc.querySelector('base')) {
-        const baseElem = doc.createElement('base');
-        baseElem.href = baseUri;
-        doc.head.insertBefore(baseElem, doc.head.firstChild);
-      }
-
-      vscode.postMessage({
-        command: 'save',
-        html: currentHTML
-      });
     }
 
     init();
