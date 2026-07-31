@@ -2,8 +2,15 @@
  * Generates the Webview HTML content for the Visual HTML Editor.
  */
 
-function getWebviewContent(htmlContent) {
-  const safeContent = JSON.stringify(htmlContent);
+function getWebviewContent(htmlContent, baseUri = null) {
+  // Safely escape HTML/script tags so embedded HTML won't break the webview script tag
+  const safeContent = JSON.stringify(htmlContent)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+
+  const safeBaseUri = baseUri ? JSON.stringify(baseUri) : 'null';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -140,6 +147,7 @@ function getWebviewContent(htmlContent) {
     const iframe = document.getElementById('editor-frame');
     const zoomBadge = document.getElementById('zoom-badge');
     const rawHTML = ${safeContent};
+    const baseUri = ${safeBaseUri};
 
     let currentZoom = 1.0;
 
@@ -198,6 +206,13 @@ function getWebviewContent(htmlContent) {
       doc.write(rawHTML);
       doc.close();
 
+      // Inject baseUri if provided for relative asset resolution
+      if (baseUri && doc.head && !doc.querySelector('base')) {
+        const baseElem = doc.createElement('base');
+        baseElem.href = baseUri;
+        doc.head.insertBefore(baseElem, doc.head.firstChild);
+      }
+
       setTimeout(() => {
         doc.designMode = 'on';
 
@@ -214,12 +229,25 @@ function getWebviewContent(htmlContent) {
     function save() {
       const doc = iframe.contentDocument || iframe.contentWindow.document;
       
+      // Strip injected base tag if we added it dynamically
+      const injectedBase = doc.querySelector('base[href="' + baseUri + '"]');
+      if (injectedBase) {
+        injectedBase.remove();
+      }
+
       const originalZoom = doc.documentElement.style.zoom;
       doc.documentElement.style.zoom = '';
 
       const currentHTML = '<!DOCTYPE html>\\n' + doc.documentElement.outerHTML;
       
       doc.documentElement.style.zoom = originalZoom;
+
+      // Re-inject baseUri after save so preview stays functional
+      if (baseUri && doc.head && !doc.querySelector('base')) {
+        const baseElem = doc.createElement('base');
+        baseElem.href = baseUri;
+        doc.head.insertBefore(baseElem, doc.head.firstChild);
+      }
 
       vscode.postMessage({
         command: 'save',

@@ -17,6 +17,7 @@ function activate(context) {
     }
 
     const fileName = document.fileName.split('/').pop();
+    const fileFolder = vscode.Uri.joinPath(document.uri, '..');
 
     // Create Webview Panel
     const panel = vscode.window.createWebviewPanel(
@@ -25,14 +26,16 @@ function activate(context) {
       vscode.ViewColumn.One,
       {
         enableScripts: true,
-        retainContextWhenHidden: true
+        retainContextWhenHidden: true,
+        localResourceRoots: [fileFolder]
       }
     );
 
     const initialContent = document.getText();
+    const baseUri = panel.webview.asWebviewUri(fileFolder).toString() + '/';
 
     // Render Webview HTML
-    panel.webview.html = getWebviewContent(initialContent);
+    panel.webview.html = getWebviewContent(initialContent, baseUri);
 
     // Handle messages from Webview
     panel.webview.onDidReceiveMessage(
