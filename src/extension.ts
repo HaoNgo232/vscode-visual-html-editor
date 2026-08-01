@@ -26,7 +26,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
       const panel = vscode.window.createWebviewPanel(
         'visualHtmlEditor',
-        `✏️ Visual: ${fileName}`,
+        `Visual: ${fileName}`,
         vscode.ViewColumn.One,
         {
           enableScripts: true,
@@ -97,7 +97,6 @@ export function activate(context: vscode.ExtensionContext): void {
                 await document.save();
                 isDirty = false;
                 lastUnsavedHTML = null;
-                vscode.window.showInformationMessage(`✅ Saved ${fileName}`);
               }
             } catch (err: any) {
               vscode.window.showErrorMessage(`Error saving file: ${err.message}`);
