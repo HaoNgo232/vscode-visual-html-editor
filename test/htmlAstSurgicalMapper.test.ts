@@ -112,11 +112,19 @@ describe('AST HTML Surgical Mapper Test Suite (Bun)', () => {
     const deepHtml = `<div id="l1"><section id="l2"><article id="l3"><p id="l4"><span id="l5">Deep Text</span></p></article></section></div>`;
     const { offsetMap } = parseAndTagHtml(deepHtml);
 
-    const l1 = Array.from(offsetMap.values()).find((e) => e.outerStart === deepHtml.indexOf('<div'));
-    const l2 = Array.from(offsetMap.values()).find((e) => e.outerStart === deepHtml.indexOf('<section'));
-    const l3 = Array.from(offsetMap.values()).find((e) => e.outerStart === deepHtml.indexOf('<article'));
+    const l1 = Array.from(offsetMap.values()).find(
+      (e) => e.outerStart === deepHtml.indexOf('<div')
+    );
+    const l2 = Array.from(offsetMap.values()).find(
+      (e) => e.outerStart === deepHtml.indexOf('<section')
+    );
+    const l3 = Array.from(offsetMap.values()).find(
+      (e) => e.outerStart === deepHtml.indexOf('<article')
+    );
     const l4 = Array.from(offsetMap.values()).find((e) => e.outerStart === deepHtml.indexOf('<p'));
-    const l5 = Array.from(offsetMap.values()).find((e) => e.outerStart === deepHtml.indexOf('<span'));
+    const l5 = Array.from(offsetMap.values()).find(
+      (e) => e.outerStart === deepHtml.indexOf('<span')
+    );
 
     expect(l1).toBeDefined();
     expect(l5).toBeDefined();
@@ -124,9 +132,20 @@ describe('AST HTML Surgical Mapper Test Suite (Bun)', () => {
     if (l1 && l2 && l3 && l4 && l5) {
       // Pass all 5 levels as dirty simultaneously
       const patched = applySurgicalPatches(deepHtml, offsetMap, [
-        { runtimeId: l1.runtimeId, newInnerHTML: '<section id="l2"><article id="l3"><p id="l4"><span id="l5">Updated Deep Text</span></p></article></section>' },
-        { runtimeId: l2.runtimeId, newInnerHTML: '<article id="l3"><p id="l4"><span id="l5">Updated Deep Text</span></p></article>' },
-        { runtimeId: l3.runtimeId, newInnerHTML: '<p id="l4"><span id="l5">Updated Deep Text</span></p>' },
+        {
+          runtimeId: l1.runtimeId,
+          newInnerHTML:
+            '<section id="l2"><article id="l3"><p id="l4"><span id="l5">Updated Deep Text</span></p></article></section>'
+        },
+        {
+          runtimeId: l2.runtimeId,
+          newInnerHTML:
+            '<article id="l3"><p id="l4"><span id="l5">Updated Deep Text</span></p></article>'
+        },
+        {
+          runtimeId: l3.runtimeId,
+          newInnerHTML: '<p id="l4"><span id="l5">Updated Deep Text</span></p>'
+        },
         { runtimeId: l4.runtimeId, newInnerHTML: '<span id="l5">Updated Deep Text</span>' },
         { runtimeId: l5.runtimeId, newInnerHTML: 'Updated Deep Text' }
       ]);
@@ -147,7 +166,10 @@ describe('AST HTML Surgical Mapper Test Suite (Bun)', () => {
     if (pOffset) {
       // User pressed Enter inside paragraph, creating a closing </p> inside newInnerHTML
       const patched = applySurgicalPatches(html, offsetMap, [
-        { runtimeId: pOffset.runtimeId, newInnerHTML: 'Paragraph text</p><p class="target">New paragraph' }
+        {
+          runtimeId: pOffset.runtimeId,
+          newInnerHTML: 'Paragraph text</p><p class="target">New paragraph'
+        }
       ]);
 
       // Returns originalHtml untouched to force fallbackHtml!

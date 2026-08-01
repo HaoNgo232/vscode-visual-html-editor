@@ -7,7 +7,11 @@ import templateHTML from './template.html' with { type: 'text' };
  * Generates the Webview HTML content for the Visual HTML Editor.
  * Decouples template.html, style.css, codicon.css, and script.js for clean maintainability.
  */
-export function getWebviewContent(htmlContent: string, baseUri: string | null = null): string {
+export function getWebviewContent(
+  htmlContent: string,
+  baseUri: string | null = null,
+  autoSaveEnabled: boolean = true
+): string {
   // Safely escape HTML/script tags so embedded HTML won't break the webview script tag
   const safeContent = JSON.stringify(htmlContent)
     .replace(/</g, '\\u003c')
@@ -19,7 +23,8 @@ export function getWebviewContent(htmlContent: string, baseUri: string | null = 
 
   const fullScript = (scriptJS as unknown as string)
     .replace('"__RAW_HTML_PLACEHOLDER__"', safeContent)
-    .replace('"__BASE_URI_PLACEHOLDER__"', safeBaseUri);
+    .replace('"__BASE_URI_PLACEHOLDER__"', safeBaseUri)
+    .replace('"__AUTO_SAVE_ENABLED_PLACEHOLDER__"', JSON.stringify(autoSaveEnabled));
 
   const templateStr = (templateHTML as unknown as string)
     .replace('/* __CODICON_PLACEHOLDER__ */', codiconCSS as unknown as string)

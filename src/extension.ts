@@ -132,17 +132,24 @@ export function activate(context: vscode.ExtensionContext): void {
       });
       context.subscriptions.push(changeSubscription);
 
-      panel.webview.html = getWebviewContent(taggedHtml, baseUri);
+      const autoSaveEnabled = context.globalState.get<boolean>(
+        'visualHtmlEditor.autoSaveEnabled',
+        true
+      );
+      panel.webview.html = getWebviewContent(taggedHtml, baseUri, autoSaveEnabled);
 
       panel.webview.onDidReceiveMessage(
         async (message: {
           command: string;
           html?: string;
           isDirty?: boolean;
+          enabled?: boolean;
           changes?: Array<{ runtimeId: string; newInnerHTML: string }>;
           fallbackHtml?: string;
         }) => {
-          if (message.command === 'setDirty') {
+          if (message.command === 'toggleAutoSave' && typeof message.enabled === 'boolean') {
+            await context.globalState.update('visualHtmlEditor.autoSaveEnabled', message.enabled);
+          } else if (message.command === 'setDirty') {
             isDirty = !!message.isDirty;
             if (message.html) {
               lastUnsavedHTML = message.html;
@@ -316,37 +323,34 @@ export function activate(context: vscode.ExtensionContext): void {
       );
 
       // Tab Disposal Guard
-      panel.onDidDispose(
-        async () => {
-          if (isDirty && lastUnsavedHTML && document) {
-            const choice = await vscode.window.showWarningMessage(
-              `You closed Visual HTML Editor for "${fileName}" with unsaved changes. Would you like to save them now?`,
-              'Save Now',
-              'Discard'
-            );
+      panel.onDidDispose(async () => {
+        if (isDirty && lastUnsavedHTML && document) {
+          const choice = await vscode.window.showWarningMessage(
+            `You closed Visual HTML Editor for "${fileName}" with unsaved changes. Would you like to save them now?`,
+            'Save Now',
+            'Discard'
+          );
 
-            if (choice === 'Save Now') {
-              try {
-                if (document.isClosed) {
-                  document = await vscode.workspace.openTextDocument(document.uri);
-                }
-                const edit = new vscode.WorkspaceEdit();
-                const fullRange = new vscode.Range(
-                  document.positionAt(0),
-                  document.positionAt(document.getText().length)
-                );
-                edit.replace(document.uri, fullRange, lastUnsavedHTML);
-                await vscode.workspace.applyEdit(edit);
-                await document.save();
-                vscode.window.showInformationMessage(`✅ Saved ${fileName}`);
-              } catch (err: any) {
-                vscode.window.showErrorMessage(`Failed to save pending changes: ${err.message}`);
+          if (choice === 'Save Now') {
+            try {
+              if (document.isClosed) {
+                document = await vscode.workspace.openTextDocument(document.uri);
               }
+              const edit = new vscode.WorkspaceEdit();
+              const fullRange = new vscode.Range(
+                document.positionAt(0),
+                document.positionAt(document.getText().length)
+              );
+              edit.replace(document.uri, fullRange, lastUnsavedHTML);
+              await vscode.workspace.applyEdit(edit);
+              await document.save();
+              vscode.window.showInformationMessage(`✅ Saved ${fileName}`);
+            } catch (err: any) {
+              vscode.window.showErrorMessage(`Failed to save pending changes: ${err.message}`);
             }
           }
-        },
-        null,
-      );
+        }
+      }, null);
     }
   );
 

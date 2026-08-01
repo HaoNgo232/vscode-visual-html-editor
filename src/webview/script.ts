@@ -13,6 +13,7 @@ declare function acquireVsCodeApi(): any;
 const vscode = acquireVsCodeApi();
 const rawHTML = '__RAW_HTML_PLACEHOLDER__';
 const baseUri = '__BASE_URI_PLACEHOLDER__';
+const initialAutoSaveEnabled = '__AUTO_SAVE_ENABLED_PLACEHOLDER__' as unknown as boolean;
 
 // DOM Elements
 const iframe = document.getElementById('editor-frame') as HTMLIFrameElement;
@@ -44,7 +45,8 @@ const saveModule = initSaveModule(
   saveBtn,
   autoSaveToggle,
   baseUri,
-  dirtyRuntimeIds
+  dirtyRuntimeIds,
+  typeof initialAutoSaveEnabled === 'boolean' ? initialAutoSaveEnabled : true
 );
 initMenuModule(moreMenu, helpModal, vscode, saveModule.getCleanHTML);
 
@@ -55,9 +57,9 @@ document.addEventListener('click', (e) => {
     const commandId = target.getAttribute('data-command');
     const value = target.getAttribute('data-value');
     if (commandId) {
-      // Prevent checkbox default handler from double firing toggle-auto-save
-      if (commandId === 'toggle-auto-save' && (e.target as HTMLElement).tagName === 'INPUT') {
-        saveModule.toggleAutoSave((e.target as HTMLInputElement).checked);
+      if (commandId === 'toggle-auto-save') {
+        e.preventDefault();
+        saveModule.toggleAutoSave();
         return;
       }
       commandRegistry.execute(commandId, value !== null ? value : undefined);

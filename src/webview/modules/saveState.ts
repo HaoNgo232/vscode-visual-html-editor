@@ -11,9 +11,15 @@ export function initSaveModule(
   saveBtn: HTMLButtonElement,
   autoSaveToggle: HTMLInputElement,
   baseUri: string | null,
-  dirtyRuntimeIds: Set<string>
+  dirtyRuntimeIds: Set<string>,
+  initialAutoSaveEnabled: boolean = true
 ) {
   const DEBOUNCE_DELAY = 1000;
+
+  updateState({ autoSaveEnabled: initialAutoSaveEnabled });
+  if (autoSaveToggle) {
+    autoSaveToggle.checked = initialAutoSaveEnabled;
+  }
 
   const debouncedSave = debounce(() => {
     const { isDirty, autoSaveEnabled } = getState();
@@ -65,6 +71,11 @@ export function initSaveModule(
     if (autoSaveToggle) {
       autoSaveToggle.checked = nextState;
     }
+
+    vscode.postMessage({
+      command: 'toggleAutoSave',
+      enabled: nextState
+    });
 
     if (!nextState) {
       debouncedSave.cancel();
