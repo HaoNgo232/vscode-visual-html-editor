@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, expect, it } from 'bun:test';
+import { calculateNextZoom, clampZoom, formatZoomPercentage } from '../src/utils/zoomUtils';
 import { getWebviewContent } from '../src/webview/editorContent';
-import { clampZoom, calculateNextZoom, formatZoomPercentage } from '../src/utils/zoomUtils';
 
 describe('Regression & Edge Cases Test Suite (Bun)', () => {
-
   describe('1. Script Escaping & Anti-Collision Tests', () => {
     it('should safely escape closing script tags inside HTML content to prevent webview crashes', () => {
-      const htmlWithScript = '<html><head><script>console.log("</script>");</script></head><body>Test</body></html>';
+      const htmlWithScript =
+        '<html><head><script>console.log("</script>");</script></head><body>Test</body></html>';
       const result = getWebviewContent(htmlWithScript);
 
       expect(result).not.toContain('</script>");');
@@ -95,8 +95,10 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
       const result = getWebviewContent('<div>Content</div>');
 
       expect(result).toContain("doc.documentElement.style.zoom = ''");
-      expect(result).toContain("const currentHTML = '<!DOCTYPE html>\\n' + doc.documentElement.outerHTML;");
-      expect(result).toContain("doc.documentElement.style.zoom = originalZoom");
+      expect(result).toContain(
+        "const currentHTML = '<!DOCTYPE html>\\n' + doc.documentElement.outerHTML;"
+      );
+      expect(result).toContain('doc.documentElement.style.zoom = originalZoom');
     });
   });
 
@@ -112,4 +114,23 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
     });
   });
 
+  describe('8. Auto Save Toggle & Debounce Protocol Tests', () => {
+    it('should contain Auto Save toggle UI elements & checked state by default', () => {
+      const result = getWebviewContent('<div>Content</div>');
+
+      expect(result).toContain('id="auto-save-toggle"');
+      expect(result).toContain('auto-save-control');
+      expect(result).toContain('toggleAutoSave');
+      expect(result).toContain('checked');
+    });
+
+    it('should contain debounced auto save logic with 1000ms delay', () => {
+      const result = getWebviewContent('<div>Content</div>');
+
+      expect(result).toContain('const DEBOUNCE_DELAY = 1000');
+      expect(result).toContain('createDebounce');
+      expect(result).toContain('debouncedSave');
+      expect(result).toContain('debouncedSave.cancel()');
+    });
+  });
 });

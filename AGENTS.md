@@ -54,6 +54,13 @@ bun run build
 bun test
 ```
 
+### Linting & Formatting (Biome)
+```bash
+bun run lint
+bun run lint:fix
+bun run format
+```
+
 ### Packaging the Extension (.vsix)
 ```bash
 bun run package

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, expect, it } from 'bun:test';
 import { getWebviewContent } from '../src/webview/editorContent';
 
 describe('Webview Editor Content Test Suite (Bun)', () => {
@@ -11,6 +11,6 @@ describe('Webview Editor Content Test Suite (Bun)', () => {
     expect(webviewHTML).toContain('Hello World');
     expect(webviewHTML).toContain('error-overlay');
     expect(webviewHTML).toContain('showError');
-    expect(webviewHTML).toContain('doc.designMode = \'on\'');
+    expect(webviewHTML).toContain("doc.designMode = 'on'");
   });
 });

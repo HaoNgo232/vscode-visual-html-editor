@@ -7,7 +7,12 @@ export function clampZoom(zoom: number, min: number = 0.3, max: number = 3.0): n
   return Math.max(min, Math.min(max, rounded));
 }
 
-export function calculateNextZoom(currentZoom: number, delta: number, min: number = 0.3, max: number = 3.0): number {
+export function calculateNextZoom(
+  currentZoom: number,
+  delta: number,
+  min: number = 0.3,
+  max: number = 3.0
+): number {
   return clampZoom(currentZoom + delta, min, max);
 }
 

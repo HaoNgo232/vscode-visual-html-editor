@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'bun:test';
-import { clampZoom, calculateNextZoom, formatZoomPercentage } from '../src/utils/zoomUtils';
+import { describe, expect, it } from 'bun:test';
+import { calculateNextZoom, clampZoom, formatZoomPercentage } from '../src/utils/zoomUtils';
 
 describe('Zoom Utilities Test Suite (Bun)', () => {
   it('should clamp zoom within min and max bounds', () => {
