@@ -23,7 +23,9 @@ High-density, token-efficient status summary for developers and AI agents.
 | **v0.0.1 Export to PDF**         | ✅ Done | 1-click Export to PDF command via iframe native print bridge.                             |
 | **v0.0.1 FormatOnSave Resync**  | ✅ Done | Post-Save Re-sync + Save Mutex + `onDidChangeTextDocument` listener for 100% formatter sync. |
 | **v0.0.1 parse5 Parser Engine** | ✅ Done | Native HTML5 `parse5` surgical parser (`src/utils/htmlSurgicalMapper.ts`) + zero circular dependency (`htmlTypes.ts`). |
-| **v0.0.1 Test Coverage**        | ✅ Done | 38/38 regression & unit tests passing (`bun test`).                                      |
+| **v0.0.1 Scoped Ctrl+A Selection**| ✅ Done | Scoped text selection range to active editing element (`.vhe-editing-active`). |
+| **v0.0.1 Persistent Undo/Redo**  | ✅ Done | Custom Webview Delta History Stack (`history.ts`) preserving Undo/Redo across Save operations. |
+| **v0.0.1 Test Coverage**        | ✅ Done | 46/46 regression & unit tests passing (`bun test`).                                      |
 
 ---
 

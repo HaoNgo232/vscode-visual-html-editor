@@ -28,7 +28,7 @@ function findChromeExecutable(): string | null {
     );
   } else if (platform === 'win32') {
     const localAppData = process.env.LOCALAPPDATA || '';
-    const programFiles = process.env['PROGRAMFILES'] || 'C:\\Program Files';
+    const programFiles = process.env.PROGRAMFILES || 'C:\\Program Files';
     const programFilesX86 = process.env['PROGRAMFILES(X86)'] || 'C:\\Program Files (x86)';
 
     candidates.push(

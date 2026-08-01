@@ -146,4 +146,13 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
       expect(result).toContain('getSelection');
     });
   });
+
+  describe('11. Native DesignMode Undo Preservation Protocol Tests', () => {
+    it('should preserve native designMode undo buffer on saveCompleted by avoiding iframe reload', () => {
+      const result = getWebviewContent('<div>Content</div>');
+
+      expect(result).toContain('saveCompleted');
+      expect(result).not.toContain('updateIframeContent(message.taggedHtml)');
+    });
+  });
 });

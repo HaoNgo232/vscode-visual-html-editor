@@ -5,7 +5,7 @@ export function initHistoryModule(iframe: HTMLIFrameElement) {
     const doc =
       iframe.contentDocument || (iframe.contentWindow ? iframe.contentWindow.document : null);
     if (doc) {
-      doc.execCommand('undo', false);
+      (doc as any).execCommand('undo', false);
     }
   }
 
@@ -13,7 +13,7 @@ export function initHistoryModule(iframe: HTMLIFrameElement) {
     const doc =
       iframe.contentDocument || (iframe.contentWindow ? iframe.contentWindow.document : null);
     if (doc) {
-      doc.execCommand('redo', false);
+      (doc as any).execCommand('redo', false);
     }
   }
 
@@ -33,5 +33,8 @@ export function initHistoryModule(iframe: HTMLIFrameElement) {
     execute: redo
   });
 
-  return { undo, redo };
+  return {
+    undo,
+    redo
+  };
 }

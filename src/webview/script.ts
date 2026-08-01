@@ -283,7 +283,7 @@ function init() {
       }
     });
 
-    if (iframe && iframe.contentWindow) {
+    if (iframe?.contentWindow) {
       iframe.contentWindow.onerror = (msg, url, line) => {
         console.warn('[Iframe Inner Notice]', msg, url, line);
         return false;
@@ -298,12 +298,12 @@ function init() {
         doc.addEventListener('keydown', handleKeydown);
         zoomModule.applyZoom();
       } catch (e: any) {
-        (window as any).showError('Design Mode Activation Error: ' + e.message);
+        (window as any).showError(`Design Mode Activation Error: ${e.message}`);
       }
     }, 100);
   } catch (err: any) {
     (window as any).showError(
-      'Failed to parse & render HTML document: ' + err.message + '\n\nStack:\n' + err.stack
+      `Failed to parse & render HTML document: ${err.message}\n\nStack:\n${err.stack}`
     );
   }
 }

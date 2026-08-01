@@ -32,7 +32,7 @@ export function initSaveModule(
     updateState({ saveStatus: status });
 
     if (statusBadge && statusDot && statusText) {
-      statusBadge.className = 'status-indicator status-' + status;
+      statusBadge.className = `status-indicator status-${status}`;
       if (status === 'saved') {
         statusText.textContent = 'Saved';
       } else if (status === 'unsaved') {
@@ -120,7 +120,7 @@ export function initSaveModule(
     if (!doc) return '';
 
     if (baseUri) {
-      const injectedBase = doc.querySelector('base[href="' + baseUri + '"]');
+      const injectedBase = doc.querySelector(`base[href="${baseUri}"]`);
       if (injectedBase) {
         injectedBase.remove();
       }
@@ -135,7 +135,7 @@ export function initSaveModule(
 
     sanitizeNode(cloneDoc);
 
-    const currentHTML = '<!DOCTYPE html>\n' + cloneDoc.outerHTML;
+    const currentHTML = `<!DOCTYPE html>\n${cloneDoc.outerHTML}`;
     doc.documentElement.style.zoom = originalZoom;
 
     if (baseUri && doc.head && !doc.querySelector('base')) {
@@ -158,7 +158,7 @@ export function initSaveModule(
 
       if (doc && dirtyRuntimeIds.size > 0) {
         for (const runtimeId of dirtyRuntimeIds) {
-          const elem = doc.querySelector('[data-runtime-id="' + runtimeId + '"]');
+          const elem = doc.querySelector(`[data-runtime-id="${runtimeId}"]`);
           if (elem) {
             changes.push({
               runtimeId,
@@ -178,7 +178,7 @@ export function initSaveModule(
     } catch (err: any) {
       setSaveStatus('error');
       if (typeof (window as any).showError === 'function') {
-        (window as any).showError('Error during Save operation: ' + err.message);
+        (window as any).showError(`Error during Save operation: ${err.message}`);
       }
     }
   }
@@ -190,13 +190,10 @@ export function initSaveModule(
         setDirtyState(false);
         dirtyRuntimeIds.clear();
         setSaveStatus('saved');
-        if (message.taggedHtml && typeof (window as any).updateIframeContent === 'function') {
-          (window as any).updateIframeContent(message.taggedHtml);
-        }
       } else {
         setSaveStatus('error');
         if (typeof (window as any).showError === 'function') {
-          (window as any).showError('Save failed: ' + (message.error || 'Unknown error'));
+          (window as any).showError(`Save failed: ${message.error || 'Unknown error'}`);
         }
       }
     }
