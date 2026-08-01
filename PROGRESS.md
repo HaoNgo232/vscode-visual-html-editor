@@ -6,27 +6,27 @@ High-density, token-efficient status summary for developers and AI agents.
 
 ## 📊 Milestone Status
 
-| Milestone                       | Status  | High-Level Summary                                                                       |
-| :------------------------------ | :-----: | :--------------------------------------------------------------------------------------- |
-| **v0.0.1 Core Engine**          | ✅ Done | Visual text editing via `designMode` inside Webview `<iframe>`, `Ctrl+S` save.           |
-| **v0.0.1 Standalone Repo**      | ✅ Done | Extracted to `/home/hao/Desktop/labs/vscode-visual-html-editor`, English UI/docs.        |
-| **v0.0.1 Zoom System**          | ✅ Done | `Ctrl+Scroll`, `Ctrl++/-`, reset badge; non-polluting save protocol.                     |
-| **v0.0.1 TS + Bun Stack**       | ✅ Done | Rebuilt with TypeScript + Bun bundler (3ms) & Bun test runner (`bun test`, 19ms).        |
-| **v0.0.1 Template Decoupling**  | ✅ Done | Separated `template.html`, `style.css`, and `script.js` directly bundled into Node runtime. |
-| **v0.0.1 Reliability & Safety** | ✅ Done | Added Error Boundary overlay, script escaping (`\u003c`), 3-layer Unsaved Changes Guard. |
-| **v0.0.1 Auto Save & Debounce** | ✅ Done | Toggle switch (`⚡ Auto Save`), 1000ms debounce timer, auto-cancellation on manual save. |
-| **v0.0.1 Auto Save Persistence**| ✅ Done | Persisted `autoSaveEnabled` via `context.globalState` + fixed DOM click bubble conflict. |
-| **v0.0.1 Biome Tooling**        | ✅ Done | High-speed Biome linter & formatter setup (`bun run lint`, `bun run format`).            |
-| **v0.0.1 Surgical Save**        | ✅ Done | Granular offset-based surgical patch protocol (`parseAndTagHtml`, `applySurgicalPatches`). |
-| **v0.0.1 Toolbar Redesign**      | ✅ Done | Single-line toolbar, VS Code Codicons, theme variables, CommandRegistry, Viewport toggle. |
-| **v0.0.1 Ponytail Audit Cleanup**| ✅ Done | Cleaned over-engineering, dead code & window bindings (~150 net lines removed, 1 devDep removed). |
-| **v0.0.1 Export to PDF**         | ✅ Done | 1-click Export to PDF command via iframe native print bridge.                             |
-| **v0.0.1 FormatOnSave Resync**  | ✅ Done | Post-Save Re-sync + Save Mutex + `onDidChangeTextDocument` listener for 100% formatter sync. |
-| **v0.0.1 parse5 Parser Engine** | ✅ Done | Native HTML5 `parse5` surgical parser (`src/utils/htmlSurgicalMapper.ts`) + zero circular dependency (`htmlTypes.ts`). |
-| **v0.0.1 Scoped Ctrl+A Selection**| ✅ Done | Scoped text selection range to active editing element (`.vhe-editing-active`). |
-| **v0.0.1 Native DesignMode Undo**| ✅ Done | Preserved native Chromium `designMode` Undo memory across saves by eliminating unwanted iframe reloads. |
-| **v0.0.1 Reload Document**       | ✅ Done | 1-click Reload Document button (`🔄 Reload`) on toolbar & popover menu to re-sync from disk. |
-| **v0.0.1 Test Coverage**        | ✅ Done | 47/47 regression & unit tests passing (`bun test`).                                      |
+| Milestone                          | Status  | High-Level Summary                                                                                                     |
+| :--------------------------------- | :-----: | :--------------------------------------------------------------------------------------------------------------------- |
+| **v0.0.1 Core Engine**             | ✅ Done | Visual text editing via `designMode` inside Webview `<iframe>`, `Ctrl+S` save.                                         |
+| **v0.0.1 Standalone Repo**         | ✅ Done | Extracted to `/home/hao/Desktop/labs/vscode-visual-html-editor`, English UI/docs.                                      |
+| **v0.0.1 Zoom System**             | ✅ Done | `Ctrl+Scroll`, `Ctrl++/-`, reset badge; non-polluting save protocol.                                                   |
+| **v0.0.1 TS + Bun Stack**          | ✅ Done | Rebuilt with TypeScript + Bun bundler (3ms) & Bun test runner (`bun test`, 19ms).                                      |
+| **v0.0.1 Template Decoupling**     | ✅ Done | Separated `template.html`, `style.css`, and `script.js` directly bundled into Node runtime.                            |
+| **v0.0.1 Reliability & Safety**    | ✅ Done | Added Error Boundary overlay, script escaping (`\u003c`), 3-layer Unsaved Changes Guard.                               |
+| **v0.0.1 Auto Save & Debounce**    | ✅ Done | Toggle switch (`⚡ Auto Save`), 1000ms debounce timer, auto-cancellation on manual save.                               |
+| **v0.0.1 Auto Save Persistence**   | ✅ Done | Persisted `autoSaveEnabled` via `context.globalState` + fixed DOM click bubble conflict.                               |
+| **v0.0.1 Biome Tooling**           | ✅ Done | High-speed Biome linter & formatter setup (`bun run lint`, `bun run format`).                                          |
+| **v0.0.1 Surgical Save**           | ✅ Done | Granular offset-based surgical patch protocol (`parseAndTagHtml`, `applySurgicalPatches`).                             |
+| **v0.0.1 Toolbar Redesign**        | ✅ Done | Single-line toolbar, VS Code Codicons, theme variables, CommandRegistry, Viewport toggle.                              |
+| **v0.0.1 Ponytail Audit Cleanup**  | ✅ Done | Cleaned over-engineering, dead code & window bindings (~150 net lines removed, 1 devDep removed).                      |
+| **v0.0.1 Export to PDF**           | ✅ Done | 1-click Export to PDF command via iframe native print bridge.                                                          |
+| **v0.0.1 FormatOnSave Resync**     | ✅ Done | Post-Save Re-sync + Save Mutex + `onDidChangeTextDocument` listener for 100% formatter sync.                           |
+| **v0.0.1 parse5 Parser Engine**    | ✅ Done | Native HTML5 `parse5` surgical parser (`src/utils/htmlSurgicalMapper.ts`) + zero circular dependency (`htmlTypes.ts`). |
+| **v0.0.1 Scoped Ctrl+A Selection** | ✅ Done | Scoped text selection range to active editing element (`.vhe-editing-active`).                                         |
+| **v0.0.1 Native DesignMode Undo**  | ✅ Done | Preserved native Chromium `designMode` Undo memory across saves by eliminating unwanted iframe reloads.                |
+| **v0.0.1 Reload Document**         | ✅ Done | 1-click Reload Document button (`🔄 Reload`) on toolbar & popover menu to re-sync from disk.                           |
+| **v0.0.1 Test Coverage**           | ✅ Done | 47/47 regression & unit tests passing (`bun test`).                                                                    |
 
 ---
 
