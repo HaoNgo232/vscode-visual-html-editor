@@ -14,6 +14,20 @@ Visually edit rendered static HTML files directly in VS Code with real-time prev
 
 ---
 
+## 📦 Installation & Build
+
+Run the following commands in your terminal to clone, package, and install the extension into VS Code:
+
+```bash
+git clone https://github.com/HaoNgo232/vscode-visual-html-editor.git
+cd vscode-visual-html-editor
+bun install
+bun run package
+code --install-extension visual-html-editor-0.0.1.vsix --force
+```
+
+---
+
 ## ✨ Features
 
 - **WYSIWYG Editing**: Click and edit text directly inside the rendered preview.
