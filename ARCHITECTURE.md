@@ -112,7 +112,8 @@ vscode-visual-html-editor/
   - Delegates click events from `[data-command]` DOM attributes.
 - **Save & State System (`modules/saveState.ts`, `modules/state.ts`)**:
   - Tracks dirty state (`isDirty`) and auto-save toggle (`autoSaveEnabled`).
-  - Implements 1000ms debounced auto-save with instant cancellation on manual save.
+  - Preserves native Chromium `designMode` Undo memory across saves by eliminating unnecessary post-save iframe reloads.
+  - Handles 1-click Reload Document command (`reload-doc` / `reloadDocument`) with unsaved changes guard to re-sync directly from disk.
   - Strips transient preview styles (`style.zoom`) prior to extracting clean fallback HTML.
 - **Viewport & Zoom Controllers (`modules/viewport.ts`, `modules/zoom.ts`)**:
   - Switches frame width presets (Desktop `100%`, Tablet `768px`, Mobile `375px`).
