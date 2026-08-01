@@ -35,6 +35,7 @@ code --install-extension visual-html-editor-0.0.1.vsix --force
 - **Auto-Save**: Toggleable background save with 1000ms debounce.
 - **Device Viewports**: Switch between Desktop (100%), Tablet (768px), and Mobile (375px).
 - **Canvas Zoom**: Scale view (0.3x to 3.0x) with Ctrl+Scroll or Ctrl++/- without polluting source files.
+- **Export PDF**: 1-click export of rendered HTML to PDF format directly from the options menu.
 - **100% Offline & Private**: Runs locally inside VS Code with zero telemetry.
 
 ---

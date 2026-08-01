@@ -46,7 +46,7 @@ const saveModule = initSaveModule(
   baseUri,
   dirtyRuntimeIds
 );
-initMenuModule(moreMenu, helpModal);
+initMenuModule(moreMenu, helpModal, vscode, saveModule.getCleanHTML);
 
 // Delegated Command Dispatcher for [data-command]
 document.addEventListener('click', (e) => {

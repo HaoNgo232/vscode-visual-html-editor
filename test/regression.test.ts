@@ -126,4 +126,13 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
       expect(result).toContain('debouncedSave.cancel()');
     });
   });
+
+  describe('9. Export PDF Protocol Tests', () => {
+    it('should contain export-pdf command registration and print trigger', () => {
+      const result = getWebviewContent('<div>Content</div>');
+
+      expect(result).toContain('export-pdf');
+      expect(result).toContain('print()');
+    });
+  });
 });

@@ -1,6 +1,11 @@
 import { commandRegistry } from './commandRegistry';
 
-export function initMenuModule(moreMenu: HTMLElement, helpModal: HTMLElement) {
+export function initMenuModule(
+  moreMenu: HTMLElement,
+  helpModal: HTMLElement,
+  vscode?: any,
+  getCleanHTML?: () => string
+) {
   function closeAllMenus() {
     const menus = document.querySelectorAll('.popover-menu');
     for (let i = 0; i < menus.length; i++) {
@@ -78,12 +83,28 @@ export function initMenuModule(moreMenu: HTMLElement, helpModal: HTMLElement) {
   });
 
   commandRegistry.register({
-    id: 'reload',
+    id: 'export-pdf',
     group: 'document',
-    icon: 'refresh',
-    title: 'Reload Document',
+    icon: 'file-pdf',
+    title: 'Export to PDF',
     execute: () => {
-      window.location.reload();
+      closeAllMenus();
+      if (vscode && getCleanHTML) {
+        vscode.postMessage({
+          command: 'exportPdf',
+          html: getCleanHTML()
+        });
+      } else {
+        const iframe = document.getElementById('editor-frame') as HTMLIFrameElement;
+        if (iframe?.contentWindow) {
+          try {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+          } catch (err: any) {
+            console.error('[Export PDF Error]', err);
+          }
+        }
+      }
     }
   });
 
