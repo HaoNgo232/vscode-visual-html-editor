@@ -219,6 +219,32 @@ function init() {
       doc.head.insertBefore(baseElem, doc.head.firstChild);
     }
 
+    if (doc.head && !doc.querySelector('#vhe-style-injection')) {
+      const styleElem = doc.createElement('style');
+      styleElem.id = 'vhe-style-injection';
+      styleElem.textContent = `
+        .vhe-editing-active {
+          outline: 1.5px solid rgba(59, 130, 246, 0.45) !important;
+          outline-offset: 2px !important;
+          border-radius: 2px !important;
+          background-color: rgba(59, 130, 246, 0.03) !important;
+        }
+      `;
+      doc.head.appendChild(styleElem);
+    }
+
+    doc.addEventListener('click', (e) => {
+      if (getState().mode !== 'edit') return;
+      const target = (e.target as HTMLElement).closest('*') as HTMLElement | null;
+      const activeElems = doc.querySelectorAll('.vhe-editing-active');
+      for (let i = 0; i < activeElems.length; i++) {
+        activeElems[i].classList.remove('vhe-editing-active');
+      }
+      if (target && target !== doc.body && target !== doc.documentElement) {
+        target.classList.add('vhe-editing-active');
+      }
+    });
+
     if (iframe && iframe.contentWindow) {
       iframe.contentWindow.onerror = (msg, url, line) => {
         console.warn('[Iframe Inner Notice]', msg, url, line);

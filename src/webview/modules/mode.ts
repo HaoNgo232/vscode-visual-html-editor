@@ -10,6 +10,12 @@ export function initModeModule(iframe: HTMLIFrameElement) {
     if (doc) {
       try {
         doc.designMode = mode === 'edit' ? 'on' : 'off';
+        if (mode === 'preview') {
+          const activeElems = doc.querySelectorAll('.vhe-editing-active');
+          for (let i = 0; i < activeElems.length; i++) {
+            activeElems[i].classList.remove('vhe-editing-active');
+          }
+        }
       } catch (e) {
         console.warn('[Mode] Failed to set designMode:', e);
       }

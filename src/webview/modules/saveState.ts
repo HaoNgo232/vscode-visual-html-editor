@@ -76,9 +76,14 @@ export function initSaveModule(
   function getCleanElementInnerHTML(elem: Element): string {
     const clone = elem.cloneNode(true) as Element;
     clone.removeAttribute('data-runtime-id');
+    clone.classList.remove('vhe-editing-active');
     const runtimeElems = clone.querySelectorAll('[data-runtime-id]');
     for (let i = 0; i < runtimeElems.length; i++) {
       runtimeElems[i].removeAttribute('data-runtime-id');
+    }
+    const activeElems = clone.querySelectorAll('.vhe-editing-active');
+    for (let i = 0; i < activeElems.length; i++) {
+      activeElems[i].classList.remove('vhe-editing-active');
     }
     if ((clone as HTMLElement).style) (clone as HTMLElement).style.zoom = '';
     return clone.innerHTML;
@@ -101,9 +106,18 @@ export function initSaveModule(
 
     const cloneDoc = doc.documentElement.cloneNode(true) as HTMLElement;
     cloneDoc.removeAttribute('data-runtime-id');
+    cloneDoc.classList.remove('vhe-editing-active');
+
+    const injectedStyle = cloneDoc.querySelector('#vhe-style-injection');
+    if (injectedStyle) injectedStyle.remove();
+
     const runtimeElems = cloneDoc.querySelectorAll('[data-runtime-id]');
     for (let i = 0; i < runtimeElems.length; i++) {
       runtimeElems[i].removeAttribute('data-runtime-id');
+    }
+    const activeElems = cloneDoc.querySelectorAll('.vhe-editing-active');
+    for (let i = 0; i < activeElems.length; i++) {
+      activeElems[i].classList.remove('vhe-editing-active');
     }
 
     const currentHTML = '<!DOCTYPE html>\n' + cloneDoc.outerHTML;
