@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![VS Code Extension](https://img.shields.io/badge/VS%20Code-v1.75%2B-blue)](https://marketplace.visualstudio.com/)
 
-Visually edit rendered static HTML files directly in VS Code with real-time preview, device frame switching, debounced auto-save, and surgical formatting-preserving save.
+Visually edit rendered static HTML files directly in VS Code with real-time preview, device frame switching, auto-save, and clean formatting-preserving save.
 
 ---
 
@@ -30,13 +30,11 @@ code --install-extension visual-html-editor-0.0.1.vsix --force
 
 ## ✨ Features
 
-- **WYSIWYG Editing**: Click and edit text directly inside the rendered preview.
-- **Surgical Save**: Updates only modified text offsets—preserves original DOCTYPE, comments, and indentation.
-- **Auto-Save**: Toggleable background save with 1000ms debounce.
-- **Device Viewports**: Switch between Desktop (100%), Tablet (768px), and Mobile (375px).
-- **Canvas Zoom**: Scale view (0.3x to 3.0x) with Ctrl+Scroll or Ctrl++/- without polluting source files.
-- **Export PDF**: 1-click export of rendered HTML to PDF format directly from the options menu.
-- **100% Offline & Private**: Runs locally inside VS Code with zero telemetry.
+- **Visual Text Editing**: Click any text in the preview to edit directly, just like a word processor.
+- **Clean File Saving**: Keeps 100% of your original HTML structure, comments, and formatting intact when saving.
+- **Auto-Save**: Automatically saves your edits in the background as you type.
+- **Device Preview**: Switch between Desktop, Tablet, and Mobile views to test responsive layouts.
+- **Instant PDF Export**: Export your rendered HTML directly to a PDF document in one click.
 
 ---
 
@@ -54,7 +52,6 @@ code --install-extension visual-html-editor-0.0.1.vsix --force
 - `Ctrl + S`: Save changes
 - `Ctrl + Z` / `Ctrl + Y`: Undo / Redo
 - `Ctrl + Scroll` / `Ctrl + +/-`: Zoom canvas
-- `Ctrl + 0`: Reset zoom (100%)
 
 ---
 

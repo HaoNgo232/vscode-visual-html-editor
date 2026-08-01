@@ -84,9 +84,6 @@ function handleKeydown(e: KeyboardEvent) {
     } else if (e.key === '-' || e.code === 'NumpadSubtract') {
       e.preventDefault();
       zoomModule.zoomChange(-0.1);
-    } else if (e.key === '0') {
-      e.preventDefault();
-      zoomModule.resetZoom();
     } else if (key === 's') {
       e.preventDefault();
       saveModule.save();
