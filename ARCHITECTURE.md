@@ -58,7 +58,8 @@ vscode-visual-html-editor/
 │   ├── types.d.ts             <-- Ambient TypeScript declarations
 │   ├── utils/
 │   │   ├── debounceUtils.ts   <-- Debounce utility function with cancel support
-│   │   ├── htmlSurgicalMapper.ts <-- Surgical offset mapping & patch application
+│   │   ├── htmlSurgicalMapper.ts <-- HTML5 parse5 AST surgical offset mapper & patcher
+│   │   ├── htmlTypes.ts       <-- Standalone Surgical Mapping interfaces (zero circular deps)
 │   │   └── zoomUtils.ts       <-- Pure utility logic for zoom bounds & math
 │   └── webview/
 │       ├── codicon.css        <-- VS Code Codicon icons CSS bundle
@@ -76,12 +77,17 @@ vscode-visual-html-editor/
 │           ├── viewport.ts    <-- Frame dimensions switcher (desktop, tablet, mobile)
 │           └── zoom.ts        <-- Zoom state & DOM style application
 └── test/
-    ├── commandRegistry.test.ts  <-- Command registry unit tests
-    ├── debounceUtils.test.ts    <-- Debounce utility unit tests
-    ├── editorContent.test.ts    <-- Webview content generator integration tests
-    ├── htmlSurgicalMapper.test.ts <-- Surgical HTML mapper & patcher tests
-    ├── regression.test.ts      <-- Comprehensive regression & edge-case test suite
-    └── zoomUtils.test.ts        <-- Zoom bounds & formatting unit tests
+    ├── autoSavePersistence.test.ts <-- Auto-save state persistence & postMessage tests
+    ├── commandRegistry.test.ts     <-- Command registry unit tests
+    ├── complexSurgicalTest.test.ts  <-- Multi-element surgical editing tests
+    ├── debounceUtils.test.ts       <-- Debounce utility unit tests
+    ├── editorContent.test.ts       <-- Webview content generator integration tests
+    ├── formatOnSaveResync.test.ts  <-- Formatter re-sync & save mutex tests
+    ├── htmlAstSurgicalMapper.test.ts <-- AST multi-line & attribute expression tests
+    ├── htmlSurgicalMapper.test.ts  <-- Core surgical HTML mapper & patcher tests
+    ├── productionUiSurgicalTest.test.ts <-- Multi-pass roundtrip Web UI editing tests
+    ├── regression.test.ts         <-- Comprehensive regression & edge-case test suite
+    └── zoomUtils.test.ts           <-- Zoom bounds & formatting unit tests
 ```
 
 ---
@@ -112,9 +118,10 @@ vscode-visual-html-editor/
   - Switches frame width presets (Desktop `100%`, Tablet `768px`, Mobile `375px`).
   - Clamps zoom scale (`0.3x` to `3.0x`) and updates iframe transform styles.
 
-### 3.3 Surgical Mapper Utility (`src/utils/htmlSurgicalMapper.ts`)
+### 3.3 Surgical Mapper & Types (`src/utils/htmlSurgicalMapper.ts`, `src/utils/htmlTypes.ts`)
 - **Responsibilities**:
-  - `parseAndTagHtml()`: Tokenizes HTML source, assigns unique `data-runtime-id="e1"` tags to opening elements, and records character ranges (`outerStart`, `outerEnd`, `innerStart`, `innerEnd`).
+  - `htmlTypes.ts`: Standalone interface contracts (`ElementOffset`, `SurgicalMapResult`, `SurgicalChange`) with zero imports to eliminate circular dependencies.
+  - `parseAndTagHtml()`: Leverages HTML5-compliant `parse5` AST parser with `sourceCodeLocationInfo: true` to assign unique `data-runtime-id="e1"` tags to opening elements and record exact character ranges (`outerStart`, `outerEnd`, `innerStart`, `innerEnd`).
   - `applySurgicalPatches()`: Sorts changes in descending order of character offset (`innerStart`) to apply targeted innerHTML updates without corrupting remaining character offsets or original formatting.
 
 ---
@@ -125,14 +132,18 @@ vscode-visual-html-editor/
    - *Decision*: Modify only edited element ranges in original source HTML instead of re-serializing the entire DOM.
    - *Rationale*: Preserves original file formatting, DOCTYPE declarations, unparsed comments, and line indentation.
 
-2. **Iframe Sandboxing for Visual Editing**:
+2. **HTML5 Specification-Compliant Parsing (`parse5`)**:
+   - *Decision*: Adopt `parse5` for AST parsing & location mapping while maintaining pure string slicing for surgical patching.
+   - *Rationale*: Guarantees 100% compliance with HTML5 specification for complex web UIs (SVGs, custom attributes, multi-line elements) while eliminating custom parser maintenance overhead.
+
+3. **Iframe Sandboxing for Visual Editing**:
    - *Decision*: Host user HTML inside an `<iframe>` within the Webview panel.
    - *Rationale*: Prevents user-defined CSS or scripts from polluting or breaking extension toolbar UI.
 
-3. **TypeScript + Bun Stack (`bun build`, `bun test`)**:
+4. **TypeScript + Bun Stack (`bun build`, `bun test`)**:
    - *Decision*: Use TypeScript for full type safety across extension and webview modules, paired with Bun for bundling and unit testing.
    - *Rationale*: Ultra-fast bundle execution (<10ms) and test execution (<350ms) with zero heavy external build dependencies.
 
-4. **Decoupled Module & Command Architecture**:
+5. **Decoupled Module & Command Architecture**:
    - *Decision*: Split webview logic into standalone domain modules (`mode`, `history`, `viewport`, `zoom`, `saveState`, `menu`) coordinated via `commandRegistry`.
    - *Rationale*: High maintainability, clear separation of concerns, and clean testability.

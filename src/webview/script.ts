@@ -257,6 +257,9 @@ function init() {
       const activeElems = doc.querySelectorAll('.vhe-editing-active');
       for (let i = 0; i < activeElems.length; i++) {
         activeElems[i].classList.remove('vhe-editing-active');
+        if (activeElems[i].classList.length === 0 || !activeElems[i].getAttribute('class')) {
+          activeElems[i].removeAttribute('class');
+        }
       }
       if (target && target !== doc.body && target !== doc.documentElement) {
         target.classList.add('vhe-editing-active');
