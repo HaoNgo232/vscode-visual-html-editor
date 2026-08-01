@@ -61,7 +61,7 @@ export function activate(context: vscode.ExtensionContext): void {
               await document.save();
               isDirty = false;
               lastUnsavedHTML = null;
-              vscode.window.showInformationMessage(`✅ Successfully saved changes to ${fileName}`);
+              vscode.window.showInformationMessage(`✅ Saved ${fileName}`);
             } catch (err: any) {
               vscode.window.showErrorMessage(`Error saving file: ${err.message}`);
             }
@@ -91,7 +91,7 @@ export function activate(context: vscode.ExtensionContext): void {
                 edit.replace(document.uri, fullRange, lastUnsavedHTML);
                 await vscode.workspace.applyEdit(edit);
                 await document.save();
-                vscode.window.showInformationMessage(`✅ Saved unsaved changes to ${fileName}`);
+                vscode.window.showInformationMessage(`✅ Saved ${fileName}`);
               } catch (err: any) {
                 vscode.window.showErrorMessage(`Failed to save pending changes: ${err.message}`);
               }

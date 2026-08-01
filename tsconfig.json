@@ -3,7 +3,7 @@
     "module": "ESNext",
     "target": "ES2022",
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "lib": ["ES2022", "DOM"],
     "sourceMap": true,
     "strict": true,
@@ -11,8 +11,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "bundler",
-    "types": ["bun-types", "@types/vscode", "@types/node"]
+    "types": ["bun", "@types/vscode", "@types/node"]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "test"]
+  "include": ["src/**/*", "test/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

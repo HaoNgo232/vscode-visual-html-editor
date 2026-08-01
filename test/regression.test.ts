@@ -94,9 +94,9 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
     it('should contain temporary zoom stripping logic prior to save', () => {
       const result = getWebviewContent('<div>Content</div>');
 
-      expect(result).toContain("doc.documentElement.style.zoom = ''");
+      expect(result).toContain('doc.documentElement.style.zoom = ""');
       expect(result).toContain(
-        "const currentHTML = '<!DOCTYPE html>\\n' + doc.documentElement.outerHTML;"
+        'const currentHTML = "<!DOCTYPE html>\\n" + doc.documentElement.outerHTML;'
       );
       expect(result).toContain('doc.documentElement.style.zoom = originalZoom');
     });
@@ -110,7 +110,7 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
       expect(result).toContain('status-dirty');
       expect(result).toContain('setDirtyState');
       expect(result).toContain('window.onbeforeunload');
-      expect(result).toContain("command: 'setDirty'");
+      expect(result).toContain('command: "setDirty"');
     });
   });
 
