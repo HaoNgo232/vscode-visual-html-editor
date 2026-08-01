@@ -68,7 +68,7 @@ bun run package
 
 ### Installing the Packaged Extension Locally
 ```bash
-code --install-extension visual-html-editor-0.0.1.vsix --force
+code --install-extension vscode-visual-html-editor-0.0.1.vsix --force
 ```
 
 ---
