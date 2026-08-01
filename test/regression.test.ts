@@ -165,4 +165,23 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
       expect(result).toContain('forceReload');
     });
   });
+
+  describe('13. W3C DOMParser Preparation & Local Fetch IPC Bridge Tests', () => {
+    it('should contain prepareDocumentHtml function using DOMParser in generated webview JS', () => {
+      const result = getWebviewContent('<div>Content</div>');
+
+      expect(result).toContain('prepareDocumentHtml');
+      expect(result).toContain('new DOMParser');
+      expect(result).toContain('querySelector');
+      expect(result).toContain('vhe-fetch-polyfill');
+    });
+
+    it('should contain fetchLocalFile IPC message bridge for reading relative files', () => {
+      const result = getWebviewContent('<div>Content</div>');
+
+      expect(result).toContain('fetchLocalFile');
+      expect(result).toContain('fetchLocalFileResponse');
+      expect(result).toContain('customFetch');
+    });
+  });
 });

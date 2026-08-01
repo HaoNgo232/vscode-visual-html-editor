@@ -93,6 +93,12 @@ export function activate(context: vscode.ExtensionContext): void {
       const fileName = document.fileName.split('/').pop() || 'document.html';
       const defaultPdfName = fileName.replace(/\.html$/i, '.pdf');
       const fileFolder = vscode.Uri.joinPath(document.uri, '..');
+      const localResourceRoots: vscode.Uri[] = [fileFolder];
+      if (vscode.workspace.workspaceFolders) {
+        for (const folder of vscode.workspace.workspaceFolders) {
+          localResourceRoots.push(folder.uri);
+        }
+      }
 
       const panel = vscode.window.createWebviewPanel(
         'visualHtmlEditor',
@@ -101,7 +107,7 @@ export function activate(context: vscode.ExtensionContext): void {
         {
           enableScripts: true,
           retainContextWhenHidden: true,
-          localResourceRoots: [fileFolder]
+          localResourceRoots
         }
       );
 
@@ -149,6 +155,30 @@ export function activate(context: vscode.ExtensionContext): void {
         }) => {
           if (message.command === 'toggleAutoSave' && typeof message.enabled === 'boolean') {
             await context.globalState.update('visualHtmlEditor.autoSaveEnabled', message.enabled);
+          } else if (
+            message.command === 'fetchLocalFile' &&
+            (message as any).requestId &&
+            (message as any).relativePath
+          ) {
+            try {
+              const relPath = (message as any).relativePath.split('?')[0].split('#')[0];
+              const targetUri = vscode.Uri.joinPath(fileFolder, relPath);
+              const fileBytes = await vscode.workspace.fs.readFile(targetUri);
+              const content = new TextDecoder('utf-8').decode(fileBytes);
+              panel.webview.postMessage({
+                command: 'fetchLocalFileResponse',
+                requestId: (message as any).requestId,
+                success: true,
+                content
+              });
+            } catch (_err: any) {
+              panel.webview.postMessage({
+                command: 'fetchLocalFileResponse',
+                requestId: (message as any).requestId,
+                success: false,
+                error: `File not found: ${(message as any).relativePath}`
+              });
+            }
           } else if (message.command === 'setDirty') {
             isDirty = !!message.isDirty;
             if (message.html) {

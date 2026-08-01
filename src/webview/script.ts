@@ -2,6 +2,7 @@ import { commandRegistry } from './modules/commandRegistry';
 import { initHistoryModule } from './modules/history';
 import { initMenuModule } from './modules/menu';
 import { initModeModule } from './modules/mode';
+import { getPolyfillScriptString } from './modules/polyfill';
 import { initSaveModule } from './modules/saveState';
 import { getState } from './modules/state';
 import { initViewportModule } from './modules/viewport';
@@ -12,7 +13,7 @@ declare function acquireVsCodeApi(): any;
 // Global VS Code API & Placeholders
 const vscode = acquireVsCodeApi();
 const rawHTML = '__RAW_HTML_PLACEHOLDER__';
-const baseUri = '__BASE_URI_PLACEHOLDER__';
+const baseUri = '__BASE_URI_PLACEHOLDER__' as unknown as string | null;
 const initialAutoSaveEnabled = '__AUTO_SAVE_ENABLED_PLACEHOLDER__' as unknown as boolean;
 
 // DOM Elements
@@ -238,15 +239,91 @@ window.onbeforeunload = (e) => {
   }
 };
 
+const POLYFILL_JS = getPolyfillScriptString();
+
+function prepareDocumentHtml(htmlString: string, base: string | null): string {
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+
+    if (base && base !== 'null' && base !== 'undefined' && !doc.querySelector('base')) {
+      const baseElem = doc.createElement('base');
+      baseElem.href = base;
+      if (doc.head) {
+        doc.head.insertBefore(baseElem, doc.head.firstChild);
+      }
+    }
+
+    if (doc.head && !doc.querySelector('#vhe-fetch-polyfill')) {
+      const scriptElem = doc.createElement('script');
+      scriptElem.id = 'vhe-fetch-polyfill';
+      scriptElem.textContent = POLYFILL_JS;
+      doc.head.insertBefore(scriptElem, doc.head.firstChild);
+    }
+
+    const hasDoctype = /^\s*<!DOCTYPE/i.test(htmlString);
+    const doctypePrefix = hasDoctype ? '<!DOCTYPE html>\n' : '';
+    return doctypePrefix + doc.documentElement.outerHTML;
+  } catch (e) {
+    console.warn('[Visual HTML Editor] DOMParser notice:', e);
+    return htmlString;
+  }
+}
+
+window.addEventListener('message', (event) => {
+  const data = event.data;
+  if (!data) return;
+
+  if (data.command === 'fetchLocalFile') {
+    vscode.postMessage(data);
+  } else if (data.command === 'fetchLocalFileResponse') {
+    if (iframe?.contentWindow) {
+      iframe.contentWindow.postMessage(data, '*');
+    }
+  }
+});
+
+function resolveNestedIframes(doc: Document) {
+  const iframes = doc.querySelectorAll('iframe[src]');
+  iframes.forEach(async (ifrm) => {
+    const iframeElem = ifrm as HTMLIFrameElement;
+    const src = iframeElem.getAttribute('src');
+    if (
+      src &&
+      !src.startsWith('http://') &&
+      !src.startsWith('https://') &&
+      !src.startsWith('data:')
+    ) {
+      try {
+        const targetUrl = new URL(
+          src,
+          doc.baseURI || (baseUri && baseUri !== 'null' ? baseUri : window.location.href)
+        ).href;
+        const res = await fetch(targetUrl);
+        if (res.ok) {
+          const text = await res.text();
+          iframeElem.removeAttribute('src');
+          iframeElem.srcdoc = text;
+        }
+      } catch (e) {
+        console.warn('[Visual HTML Editor] Nested iframe fetch notice:', src, e);
+      }
+    }
+  });
+}
+
 function init() {
   try {
     const doc =
       iframe.contentDocument || (iframe.contentWindow ? iframe.contentWindow.document : null);
     if (!doc) return;
 
+    const preparedHtml = prepareDocumentHtml(rawHTML, baseUri);
     doc.open();
-    doc.write(rawHTML);
+    doc.write(preparedHtml);
     doc.close();
+
+    resolveNestedIframes(doc);
 
     if (baseUri && doc.head && !doc.querySelector('base')) {
       const baseElem = doc.createElement('base');
@@ -317,9 +394,12 @@ function init() {
     const scrollTop = doc.documentElement.scrollTop || doc.body.scrollTop;
     const scrollLeft = doc.documentElement.scrollLeft || doc.body.scrollLeft;
 
+    const preparedHtml = prepareDocumentHtml(newHtml, baseUri);
     doc.open();
-    doc.write(newHtml);
+    doc.write(preparedHtml);
     doc.close();
+
+    resolveNestedIframes(doc);
 
     if (baseUri && doc.head && !doc.querySelector('base')) {
       const baseElem = doc.createElement('base');
