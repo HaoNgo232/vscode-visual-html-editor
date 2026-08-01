@@ -75,4 +75,21 @@ describe('HTML Surgical Mapper Utility Test Suite (Bun)', () => {
 
     expect(updated).toBe('<section><h1>Hảo Ngo</h1><p>Senior Software Engineer</p></section>');
   });
+
+  it('should handle empty HTML input gracefully', () => {
+    const { taggedHtml, offsetMap } = parseAndTagHtml('');
+    expect(taggedHtml).toBe('');
+    expect(offsetMap.size).toBe(0);
+  });
+
+  it('should handle void and SVG tags correctly', () => {
+    const inputHtml = '<svg viewBox="0 0 10 10"><path d="M0 0"/></svg><br><img src="test.jpg">';
+    const { taggedHtml, offsetMap } = parseAndTagHtml(inputHtml);
+
+    expect(taggedHtml).toContain('<svg data-runtime-id="e1"');
+    expect(taggedHtml).toContain('<path data-runtime-id="e2"');
+    expect(taggedHtml).toContain('<br data-runtime-id="e3"');
+    expect(taggedHtml).toContain('<img data-runtime-id="e4"');
+    expect(offsetMap.size).toBe(4);
+  });
 });

@@ -1,247 +1,98 @@
-/**
- * HTML AST & Surgical Mapper Utility
- * AST-level state machine parser for HTML5, template attributes, and multi-line elements.
- * Correctly handles attribute quotes (expressions with < and > inside attribute values),
- * comments, script/style blocks, and exact line/column positions.
- */
+import * as parse5 from 'parse5';
+import type { ElementOffset, SurgicalChange, SurgicalMapResult } from './htmlTypes';
 
-export interface ElementOffset {
-  runtimeId: string;
-  tagName: string;
-  outerStart: number;
-  outerEnd: number;
-  innerStart: number;
-  innerEnd: number;
-  startLine: number;
-  startCol: number;
-  endLine: number;
-  endCol: number;
-}
-
-export interface SurgicalMapResult {
-  taggedHtml: string;
-  offsetMap: Map<string, ElementOffset>;
-}
-
-export interface SurgicalChange {
-  runtimeId: string;
-  newInnerHTML: string;
-}
-
-const VOID_TAGS = new Set([
-  'area',
-  'base',
-  'br',
-  'col',
-  'embed',
-  'hr',
-  'img',
-  'input',
-  'link',
-  'meta',
-  'param',
-  'source',
-  'track',
-  'wbr'
-]);
-
-interface StackItem {
-  runtimeId: string;
-  tagName: string;
-  outerStart: number;
-  innerStart: number;
-  startLine: number;
-  startCol: number;
-}
-
-function computeLineCol(text: string, index: number): { line: number; col: number } {
-  let line = 1;
-  let lastNewlineIndex = -1;
-  for (let i = 0; i < index && i < text.length; i++) {
-    if (text[i] === '\n') {
-      line++;
-      lastNewlineIndex = i;
-    }
-  }
-  const col = index - (lastNewlineIndex + 1);
-  return { line, col };
-}
+export type { ElementOffset, SurgicalChange, SurgicalMapResult };
 
 /**
- * Parses original HTML using an AST state machine tokenizer, injects `data-runtime-id`
- * for webview runtime, and records precise character ranges & line/column positions in originalHtml.
+ * HTML5-compliant AST parser using parse5 to tag elements with `data-runtime-id`
+ * and generate exact character offset mappings for surgical patching.
  */
 export function parseAndTagHtml(originalHtml: string): SurgicalMapResult {
   const offsetMap = new Map<string, ElementOffset>();
-  let taggedHtml = '';
-  let elementCounter = 0;
-  const stack: StackItem[] = [];
-
-  let i = 0;
-  const len = originalHtml.length;
-
-  while (i < len) {
-    // 1. Check for HTML Comment <!-- ... -->
-    if (originalHtml.startsWith('<!--', i)) {
-      const commentEnd = originalHtml.indexOf('-->', i + 4);
-      const end = commentEnd === -1 ? len : commentEnd + 3;
-      taggedHtml += originalHtml.substring(i, end);
-      i = end;
-      continue;
-    }
-
-    // 2. Check for <script> ... </script>
-    if (originalHtml.substring(i, i + 7).toLowerCase() === '<script') {
-      const charAfter = originalHtml[i + 7];
-      if (!charAfter || /\s|>|\//.test(charAfter)) {
-        const scriptEndMatch = /<\/script\s*>/i.exec(originalHtml.substring(i));
-        if (scriptEndMatch) {
-          const end = i + scriptEndMatch.index + scriptEndMatch[0].length;
-          taggedHtml += originalHtml.substring(i, end);
-          i = end;
-          continue;
-        }
-      }
-    }
-
-    // 3. Check for <style> ... </style>
-    if (originalHtml.substring(i, i + 6).toLowerCase() === '<style') {
-      const charAfter = originalHtml[i + 6];
-      if (!charAfter || /\s|>|\//.test(charAfter)) {
-        const styleEndMatch = /<\/style\s*>/i.exec(originalHtml.substring(i));
-        if (styleEndMatch) {
-          const end = i + styleEndMatch.index + styleEndMatch[0].length;
-          taggedHtml += originalHtml.substring(i, end);
-          i = end;
-          continue;
-        }
-      }
-    }
-
-    // 4. Check for Tag Opening/Closing: <
-    if (originalHtml[i] === '<') {
-      const outerStart = i;
-      const isClosing = originalHtml[i + 1] === '/';
-      const tagStartPos = isClosing ? i + 2 : i + 1;
-
-      // Extract tag name
-      let tagEndPos = tagStartPos;
-      while (tagEndPos < len && /[a-zA-Z0-9-]/.test(originalHtml[tagEndPos])) {
-        tagEndPos++;
-      }
-
-      const rawTagName = originalHtml.substring(tagStartPos, tagEndPos);
-      if (rawTagName.length > 0) {
-        const tagName = rawTagName.toLowerCase();
-
-        // Scan attributes while respecting quotes
-        let attrScanPos = tagEndPos;
-        let inQuote: string | null = null;
-
-        while (attrScanPos < len) {
-          const char = originalHtml[attrScanPos];
-          if (inQuote) {
-            if (char === inQuote) {
-              inQuote = null;
-            }
-          } else if (char === '"' || char === "'") {
-            inQuote = char;
-          } else if (char === '>') {
-            break;
-          }
-          attrScanPos++;
-        }
-
-        if (attrScanPos < len && originalHtml[attrScanPos] === '>') {
-          const outerTagFull = originalHtml.substring(outerStart, attrScanPos + 1);
-
-          if (isClosing) {
-            taggedHtml += outerTagFull;
-            const innerEnd = outerStart;
-            const outerEnd = attrScanPos + 1;
-
-            // Match stack
-            let stackIndex = -1;
-            for (let s = stack.length - 1; s >= 0; s--) {
-              if (stack[s].tagName === tagName) {
-                stackIndex = s;
-                break;
-              }
-            }
-
-            if (stackIndex !== -1) {
-              const item = stack[stackIndex];
-              stack.splice(stackIndex, stack.length - stackIndex);
-
-              const startPos = computeLineCol(originalHtml, item.outerStart);
-              const endPos = computeLineCol(originalHtml, outerEnd);
-
-              offsetMap.set(item.runtimeId, {
-                runtimeId: item.runtimeId,
-                tagName: item.tagName,
-                outerStart: item.outerStart,
-                outerEnd,
-                innerStart: item.innerStart,
-                innerEnd,
-                startLine: startPos.line,
-                startCol: startPos.col,
-                endLine: endPos.line,
-                endCol: endPos.col
-              });
-            }
-          } else {
-            // Opening tag
-            const rawAttrs = originalHtml.substring(tagEndPos, attrScanPos);
-            const isSelfClosing = rawAttrs.trim().endsWith('/') || VOID_TAGS.has(tagName);
-
-            elementCounter++;
-            const runtimeId = `e${elementCounter}`;
-
-            const cleanAttrs = rawAttrs.endsWith('/') ? rawAttrs.slice(0, -1) : rawAttrs;
-            const injectedTag = `<${rawTagName} data-runtime-id="${runtimeId}"${cleanAttrs}${rawAttrs.endsWith('/') ? '/' : ''}>`;
-
-            taggedHtml += injectedTag;
-
-            const innerStart = attrScanPos + 1;
-            const outerEnd = attrScanPos + 1;
-            const startPos = computeLineCol(originalHtml, outerStart);
-
-            if (isSelfClosing) {
-              const endPos = computeLineCol(originalHtml, outerEnd);
-              offsetMap.set(runtimeId, {
-                runtimeId,
-                tagName,
-                outerStart,
-                outerEnd,
-                innerStart,
-                innerEnd: innerStart,
-                startLine: startPos.line,
-                startCol: startPos.col,
-                endLine: endPos.line,
-                endCol: endPos.col
-              });
-            } else {
-              stack.push({
-                runtimeId,
-                tagName,
-                outerStart,
-                innerStart,
-                startLine: startPos.line,
-                startCol: startPos.col
-              });
-            }
-          }
-
-          i = attrScanPos + 1;
-          continue;
-        }
-      }
-    }
-
-    // Default: append current character
-    taggedHtml += originalHtml[i];
-    i++;
+  if (!originalHtml) {
+    return { taggedHtml: '', offsetMap };
   }
+
+  const doc = parse5.parse(originalHtml, { sourceCodeLocationInfo: true });
+
+  // Recursively collect element nodes with valid startTag locations
+  function collectElements(node: any, list: any[] = []): any[] {
+    if (node?.tagName && node.tagName !== 'script' && node.tagName !== 'style') {
+      const loc = node.sourceCodeLocation;
+      if (loc?.startTag) {
+        list.push(node);
+      }
+    }
+    if (node?.childNodes) {
+      for (const child of node.childNodes) {
+        collectElements(child, list);
+      }
+    }
+    return list;
+  }
+
+  const elements = collectElements(doc);
+
+  // Sort elements by startTag offset ascending
+  elements.sort(
+    (a, b) => a.sourceCodeLocation.startTag.startOffset - b.sourceCodeLocation.startTag.startOffset
+  );
+
+  let taggedHtml = '';
+  let lastIndex = 0;
+
+  for (let i = 0; i < elements.length; i++) {
+    const node = elements[i];
+    const runtimeId = `e${i + 1}`;
+    const loc = node.sourceCodeLocation;
+    const tagName = String(node.tagName).toLowerCase();
+
+    const startTagOffset = loc.startTag.startOffset;
+    const startTagEndOffset = loc.startTag.endOffset;
+
+    const outerStart = loc.startOffset;
+    const outerEnd = loc.endOffset;
+    const innerStart = loc.startTag.endOffset;
+    const innerEnd = loc.endTag ? loc.endTag.startOffset : innerStart;
+
+    const startLine = loc.startLine ?? 1;
+    const startCol = Math.max(0, (loc.startCol ?? 1) - 1);
+    const endLine = loc.endLine ?? startLine;
+    const endCol = Math.max(0, (loc.endCol ?? 1) - 1);
+
+    offsetMap.set(runtimeId, {
+      runtimeId,
+      tagName,
+      outerStart,
+      outerEnd,
+      innerStart,
+      innerEnd,
+      startLine,
+      startCol,
+      endLine,
+      endCol
+    });
+
+    // Append text leading up to start tag
+    taggedHtml += originalHtml.slice(lastIndex, startTagOffset);
+
+    // Inject data-runtime-id right after tag name in opening tag
+    const rawStartTag = originalHtml.slice(startTagOffset, startTagEndOffset);
+    const tagMatch = /^<([a-zA-Z0-9:-]+)/.exec(rawStartTag);
+
+    if (tagMatch) {
+      const tagNameLen = tagMatch[0].length;
+      const injectedStartTag = `${rawStartTag.slice(0, tagNameLen)} data-runtime-id="${runtimeId}"${rawStartTag.slice(tagNameLen)}`;
+      taggedHtml += injectedStartTag;
+    } else {
+      taggedHtml += rawStartTag;
+    }
+
+    lastIndex = startTagEndOffset;
+  }
+
+  // Append remaining HTML content
+  taggedHtml += originalHtml.slice(lastIndex);
 
   return {
     taggedHtml,

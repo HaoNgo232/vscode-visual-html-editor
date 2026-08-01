@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SaaS Analytics Dashboard &mdash; Modern Web UI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --border-color: rgba(255, 255, 255, 0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+    }
+    .sidebar {
+      width: 260px;
+      background: #1e293b;
+      border-right: 1px solid var(--border-color);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+    .brand { font-size: 1.25rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+    .nav-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .nav-item a {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 16px; border-radius: 8px;
+      color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .nav-item.active a, .nav-item a:hover {
+      background: var(--accent); color: #fff;
+    }
+    .main-content {
+      flex: 1; padding: 32px; overflow-y: auto; display: flex; flex-direction: column; gap: 24px;
+    }
+    .header-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-bottom: 20px; border-bottom: 1px solid var(--border-color);
+    }
+    .user-profile { display: flex; align-items: center; gap: 12px; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: #3b82f6; display: grid; place-items: center; font-weight: 600; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .stat-card {
+      background: var(--card-bg); backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .stat-title { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-value { font-size: 2rem; font-weight: 700; }
+    .stat-badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 999px; width: max-content; }
+    .badge-positive { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+    .badge-negative { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    .chart-container {
+      background: var(--card-bg); border: 1px solid var(--border-color);
+      border-radius: 12px; padding: 24px; min-height: 240px;
+    }
+    .data-table-container {
+      background: var(--card-bg); border: 1px solid var(--border-color);
+      border-radius: 12px; overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+    th { background: rgba(15, 23, 42, 0.6); padding: 14px 20px; color: var(--text-muted); font-weight: 600; }
+    td { padding: 14px 20px; border-top: 1px solid var(--border-color); }
+    tr:hover { background: rgba(255, 255, 255, 0.03); }
+    .action-btn {
+      background: transparent; border: 1px solid var(--border-color); color: var(--text-main);
+      padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;
+    }
+    .action-btn:hover { background: var(--accent); border-color: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <!-- Left Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="brand">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+      <span>ApexAnalytics</span>
+    </div>
+
+    <nav>
+      <ul class="nav-list">
+        <li class="nav-item active">
+          <a href="/dashboard" data-tooltip="Overview Dashboard">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="9"/>
+              <rect x="14" y="3" width="7" height="5"/>
+              <rect x="14" y="12" width="7" height="9"/>
+              <rect x="3" y="16" width="7" height="5"/>
+            </svg>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/analytics" data-rule="a > b &amp;&amp; c < 100">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            <span>Realtime Traffic</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/customers">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <span>Customers &amp; Contacts</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main Dashboard Content -->
+  <main class="main-content">
+    
+    <!-- Header Bar -->
+    <header class="header-bar">
+      <div>
+        <h1 id="page-title" style="font-size: 1.5rem; font-weight: 700;">Executive Performance Overview</h1>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Updated 5 minutes ago &bull; Sync Status: Active</p>
+      </div>
+
+      <div class="user-profile">
+        <div class="avatar">HN</div>
+        <div>
+          <div style="font-weight: 600; font-size: 0.9rem;">Hao Ngo</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Lead Systems Architect</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Key Metrics Grid -->
+    <section class="grid-3">
+      <div class="stat-card" id="card-mrr">
+        <span class="stat-title">Monthly Recurring Revenue</span>
+        <span class="stat-value" id="mrr-val">$148,250.00</span>
+        <span class="stat-badge badge-positive">+14.2% from last month</span>
+      </div>
+
+      <div class="stat-card" id="card-active-users">
+        <span class="stat-title">Active Platform Users</span>
+        <span class="stat-value" id="users-val">42,890</span>
+        <span class="stat-badge badge-positive">+8.5% weekly growth</span>
+      </div>
+
+      <div class="stat-card" id="card-churn">
+        <span class="stat-title">Net Customer Churn</span>
+        <span class="stat-value" id="churn-val">1.12%</span>
+        <span class="stat-badge badge-positive">-0.4% improvement</span>
+      </div>
+    </section>
+
+    <!-- Analytics Chart Area -->
+    <section class="chart-container">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+        <h2 style="font-size: 1.1rem; font-weight: 600;">Revenue &amp; Throughput Trends</h2>
+        <button class="action-btn" aria-label="Download Analytics CSV">Export Data CSV</button>
+      </div>
+
+      <!-- Complex Multi-path Vector Graph -->
+      <svg width="100%" height="160" viewBox="0 0 600 160" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#6366f1" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="#6366f1" stop-opacity="0.0"/>
+          </linearGradient>
+        </defs>
+        <path d="M0 130 Q 150 40 300 90 T 600 20 L 600 160 L 0 160 Z" fill="url(#chartGrad)"/>
+        <path d="M0 130 Q 150 40 300 90 T 600 20" fill="none" stroke="#6366f1" stroke-width="3"/>
+        <circle cx="300" cy="90" r="5" fill="#6366f1" stroke="#fff" stroke-width="2"/>
+        <circle cx="600" cy="20" r="5" fill="#6366f1" stroke="#fff" stroke-width="2"/>
+      </svg>
+    </section>
+
+    <!-- Recent Transactions Table -->
+    <section class="data-table-container">
+      <div style="padding: 16px 20px; font-weight: 600; font-size: 1rem; border-bottom: 1px solid var(--border-color);">
+        Recent Platform Transactions
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Subscription Tier</th>
+            <th>Billing Cycle</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="tx-row-1">
+            <td style="font-weight: 500;">Acme Corporation</td>
+            <td>Enterprise Tier</td>
+            <td>Annual Auto-renew</td>
+            <td style="font-weight: 600;">$12,000.00</td>
+            <td><span class="stat-badge badge-positive">Completed</span></td>
+            <td><button class="action-btn">View Invoice</button></td>
+          </tr>
+          <tr id="tx-row-2">
+            <td style="font-weight: 500;">Starlight Systems</td>
+            <td>Pro Business</td>
+            <td>Monthly Recurring</td>
+            <td style="font-weight: 600;">$850.00</td>
+            <td><span class="stat-badge badge-positive">Completed</span></td>
+            <td><button class="action-btn">View Invoice</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+  </main>
+</body>
+</html>
