@@ -1,6 +1,6 @@
 {
-  "name": "visual-html-editor",
-  "displayName": "Visual HTML Editor",
+  "name": "vscode-visual-html-editor",
+  "displayName": "Visual HTML Editor - Live & CV",
   "description": "Visually edit rendered HTML files directly in VS Code and press Ctrl+S to save changes back to source code.",
   "version": "0.0.1",
   "publisher": "haongo232",
