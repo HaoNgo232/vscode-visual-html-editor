@@ -16,7 +16,8 @@ High-density, token-efficient status summary for developers and AI agents.
 | **v0.0.1 Reliability & Safety** | ✅ Done | Added Error Boundary overlay, script escaping (`\u003c`), 3-layer Unsaved Changes Guard. |
 | **v0.0.1 Auto Save & Debounce** | ✅ Done | Toggle switch (`⚡ Auto Save`), 1000ms debounce timer, auto-cancellation on manual save. |
 | **v0.0.1 Biome Tooling**        | ✅ Done | High-speed Biome linter & formatter setup (`bun run lint`, `bun run format`).            |
-| **v0.0.1 Test Coverage**        | ✅ Done | 21/21 regression & unit tests passing (`bun test`).                                      |
+| **v0.0.1 Surgical Save**        | ✅ Done | Granular offset-based surgical patch protocol (`parseAndTagHtml`, `applySurgicalPatches`). |
+| **v0.0.1 Test Coverage**        | ✅ Done | 26/26 regression & unit tests passing (`bun test`).                                      |
 
 ---
 

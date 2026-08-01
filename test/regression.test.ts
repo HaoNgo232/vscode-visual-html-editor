@@ -96,7 +96,7 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
 
       expect(result).toContain('doc.documentElement.style.zoom = ""');
       expect(result).toContain('currentHTML');
-      expect(result).toContain('doc.documentElement.outerHTML');
+      expect(result).toContain('outerHTML');
       expect(result).toContain('doc.documentElement.style.zoom = originalZoom');
     });
   });

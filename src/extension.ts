@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { applySurgicalPatches, parseAndTagHtml } from './utils/htmlSurgicalMapper';
 import { getWebviewContent } from './webview/editorContent';
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -34,34 +35,70 @@ export function activate(context: vscode.ExtensionContext): void {
         }
       );
 
-      const initialContent = document.getText();
+      let originalSourceHtml = document.getText();
+      const { taggedHtml, offsetMap } = parseAndTagHtml(originalSourceHtml);
+      let currentOffsetMap = offsetMap;
+
       const baseUri = `${panel.webview.asWebviewUri(fileFolder).toString()}/`;
 
       let isDirty = false;
       let lastUnsavedHTML: string | null = null;
 
-      panel.webview.html = getWebviewContent(initialContent, baseUri);
+      panel.webview.html = getWebviewContent(taggedHtml, baseUri);
 
       panel.webview.onDidReceiveMessage(
-        async (message: { command: string; html?: string; isDirty?: boolean }) => {
+        async (message: {
+          command: string;
+          html?: string;
+          isDirty?: boolean;
+          changes?: Array<{ runtimeId: string; newInnerHTML: string }>;
+          fallbackHtml?: string;
+        }) => {
           if (message.command === 'setDirty') {
             isDirty = !!message.isDirty;
             if (message.html) {
               lastUnsavedHTML = message.html;
             }
-          } else if (message.command === 'save' && message.html && document) {
+          } else if (
+            (message.command === 'save' || message.command === 'saveSurgical') &&
+            document
+          ) {
             try {
-              const edit = new vscode.WorkspaceEdit();
-              const fullRange = new vscode.Range(
-                document.positionAt(0),
-                document.positionAt(document.getText().length)
-              );
-              edit.replace(document.uri, fullRange, message.html);
-              await vscode.workspace.applyEdit(edit);
-              await document.save();
-              isDirty = false;
-              lastUnsavedHTML = null;
-              vscode.window.showInformationMessage(`✅ Saved ${fileName}`);
+              let finalHtml = message.fallbackHtml || message.html || '';
+
+              if (
+                message.command === 'saveSurgical' &&
+                message.changes &&
+                message.changes.length > 0 &&
+                currentOffsetMap &&
+                originalSourceHtml
+              ) {
+                const patched = applySurgicalPatches(
+                  originalSourceHtml,
+                  currentOffsetMap,
+                  message.changes
+                );
+                if (patched && patched !== originalSourceHtml) {
+                  finalHtml = patched;
+                  originalSourceHtml = patched;
+                  const reParsed = parseAndTagHtml(patched);
+                  currentOffsetMap = reParsed.offsetMap;
+                }
+              }
+
+              if (finalHtml) {
+                const edit = new vscode.WorkspaceEdit();
+                const fullRange = new vscode.Range(
+                  document.positionAt(0),
+                  document.positionAt(document.getText().length)
+                );
+                edit.replace(document.uri, fullRange, finalHtml);
+                await vscode.workspace.applyEdit(edit);
+                await document.save();
+                isDirty = false;
+                lastUnsavedHTML = null;
+                vscode.window.showInformationMessage(`✅ Saved ${fileName}`);
+              }
             } catch (err: any) {
               vscode.window.showErrorMessage(`Error saving file: ${err.message}`);
             }
@@ -71,7 +108,7 @@ export function activate(context: vscode.ExtensionContext): void {
         context.subscriptions
       );
 
-      // Tab Disposal Guard: Prompt user if tab is closed with unsaved changes
+      // Tab Disposal Guard
       panel.onDidDispose(
         async () => {
           if (isDirty && lastUnsavedHTML && document) {

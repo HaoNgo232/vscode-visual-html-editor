@@ -13,6 +13,7 @@ let lastError = "";
 let isDirty = false;
 let autoSaveEnabled = true;
 const DEBOUNCE_DELAY = 1000;
+const dirtyRuntimeIds = new Set();
 
 function createDebounce(fn, wait) {
   let timeoutId = null;
@@ -166,6 +167,48 @@ function handleKeydown(e) {
   }
 }
 
+function registerMutationTracker(doc) {
+  const markTargetDirty = (target) => {
+    if (!target) return;
+    let curr = target.nodeType === 3 ? target.parentElement : target;
+    while (curr && curr !== doc.body && curr !== doc.documentElement && !curr.getAttribute("data-runtime-id")) {
+      curr = curr.parentElement;
+    }
+    if (curr && curr.getAttribute("data-runtime-id")) {
+      dirtyRuntimeIds.add(curr.getAttribute("data-runtime-id"));
+      if (!isDirty) setDirtyState(true);
+      if (autoSaveEnabled) {
+        debouncedSave();
+      }
+    } else {
+      if (!isDirty) setDirtyState(true);
+      if (autoSaveEnabled) {
+        debouncedSave();
+      }
+    }
+  };
+
+  doc.addEventListener("input", (e) => markTargetDirty(e.target));
+  doc.addEventListener("keyup", (e) => {
+    if (!e.ctrlKey && !e.metaKey && e.key !== "Control" && e.key !== "Shift") {
+      markTargetDirty(e.target || doc.activeElement);
+    }
+  });
+
+  if (window.MutationObserver) {
+    const observer = new MutationObserver((mutations) => {
+      for (let i = 0; i < mutations.length; i++) {
+        markTargetDirty(mutations[i].target);
+      }
+    });
+    observer.observe(doc.body, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+  }
+}
+
 function init() {
   try {
     const doc = iframe ? iframe.contentDocument || iframe.contentWindow.document : null;
@@ -191,21 +234,7 @@ function init() {
     setTimeout(() => {
       try {
         doc.designMode = "on";
-
-        const markAsDirty = () => {
-          if (!isDirty) setDirtyState(true);
-          if (autoSaveEnabled) {
-            debouncedSave();
-          }
-        };
-
-        doc.addEventListener("input", markAsDirty);
-        doc.addEventListener("keyup", (e) => {
-          if (!e.ctrlKey && !e.metaKey && e.key !== "Control" && e.key !== "Shift") {
-            markAsDirty();
-          }
-        });
-
+        registerMutationTracker(doc);
         doc.addEventListener("wheel", handleWheel, { passive: false });
         doc.addEventListener("keydown", handleKeydown);
         applyZoom();
@@ -221,6 +250,17 @@ function init() {
 window.addEventListener("wheel", handleWheel, { passive: false });
 window.addEventListener("keydown", handleKeydown);
 
+function getCleanElementInnerHTML(elem) {
+  const clone = elem.cloneNode(true);
+  clone.removeAttribute("data-runtime-id");
+  const runtimeElems = clone.querySelectorAll("[data-runtime-id]");
+  for (let i = 0; i < runtimeElems.length; i++) {
+    runtimeElems[i].removeAttribute("data-runtime-id");
+  }
+  if (clone.style) clone.style.zoom = "";
+  return clone.innerHTML;
+}
+
 function getCleanHTML() {
   const doc = iframe ? iframe.contentDocument || iframe.contentWindow.document : null;
   if (!doc) return "";
@@ -233,7 +273,14 @@ function getCleanHTML() {
   const originalZoom = doc.documentElement.style.zoom;
   doc.documentElement.style.zoom = "";
 
-  const currentHTML = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+  const cloneDoc = doc.documentElement.cloneNode(true);
+  cloneDoc.removeAttribute("data-runtime-id");
+  const runtimeElems = cloneDoc.querySelectorAll("[data-runtime-id]");
+  for (let i = 0; i < runtimeElems.length; i++) {
+    runtimeElems[i].removeAttribute("data-runtime-id");
+  }
+
+  const currentHTML = "<!DOCTYPE html>\n" + cloneDoc.outerHTML;
 
   doc.documentElement.style.zoom = originalZoom;
 
@@ -249,12 +296,29 @@ function getCleanHTML() {
 function save() {
   try {
     debouncedSave.cancel();
-    const currentHTML = getCleanHTML();
+    const doc = iframe ? iframe.contentDocument || iframe.contentWindow.document : null;
+
+    const changes = [];
+    if (doc && dirtyRuntimeIds.size > 0) {
+      for (const runtimeId of dirtyRuntimeIds) {
+        const elem = doc.querySelector('[data-runtime-id="' + runtimeId + '"]');
+        if (elem) {
+          changes.push({
+            runtimeId: runtimeId,
+            newInnerHTML: getCleanElementInnerHTML(elem),
+          });
+        }
+      }
+    }
+
+    const fallbackHTML = getCleanHTML();
     setDirtyState(false);
+    dirtyRuntimeIds.clear();
 
     vscode.postMessage({
-      command: "save",
-      html: currentHTML,
+      command: "saveSurgical",
+      changes: changes,
+      fallbackHtml: fallbackHTML,
     });
   } catch (err) {
     showError("Error during Save operation: " + err.message);
