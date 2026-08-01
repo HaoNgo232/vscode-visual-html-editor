@@ -20,7 +20,8 @@ High-density, token-efficient status summary for developers and AI agents.
 | **v0.0.1 Toolbar Redesign**      | ✅ Done | Single-line toolbar, VS Code Codicons, theme variables, CommandRegistry, Viewport toggle. |
 | **v0.0.1 Ponytail Audit Cleanup**| ✅ Done | Cleaned over-engineering, dead code & window bindings (~150 net lines removed, 1 devDep removed). |
 | **v0.0.1 Export to PDF**         | ✅ Done | 1-click Export to PDF command via iframe native print bridge.                             |
-| **v0.0.1 Test Coverage**        | ✅ Done | 27/27 regression & unit tests passing (`bun test`).                                      |
+| **v0.0.1 FormatOnSave Resync**  | ✅ Done | Post-Save Re-sync + Save Mutex + `onDidChangeTextDocument` listener for 100% formatter sync. |
+| **v0.0.1 Test Coverage**        | ✅ Done | 29/29 regression & unit tests passing (`bun test`).                                      |
 
 ---
 

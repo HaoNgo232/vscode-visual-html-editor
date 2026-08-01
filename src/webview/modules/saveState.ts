@@ -154,8 +154,6 @@ export function initSaveModule(
       }
 
       const fallbackHTML = getCleanHTML();
-      setDirtyState(false);
-      dirtyRuntimeIds.clear();
 
       vscode.postMessage({
         command: 'saveSurgical',
@@ -169,6 +167,22 @@ export function initSaveModule(
       }
     }
   }
+
+  window.addEventListener('message', (event) => {
+    const message = event.data;
+    if (message && message.command === 'saveCompleted') {
+      if (message.success) {
+        setDirtyState(false);
+        dirtyRuntimeIds.clear();
+        setSaveStatus('saved');
+      } else {
+        setSaveStatus('error');
+        if (typeof (window as any).showError === 'function') {
+          (window as any).showError('Save failed: ' + (message.error || 'Unknown error'));
+        }
+      }
+    }
+  });
 
   commandRegistry.register({
     id: 'save',

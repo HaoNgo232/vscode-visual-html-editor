@@ -90,6 +90,17 @@ export function activate(context: vscode.ExtensionContext): void {
 
       let isDirty = false;
       let lastUnsavedHTML: string | null = null;
+      let isSaving = false;
+
+      // Sync originalSourceHtml and offsetMap when document is edited externally
+      const changeSubscription = vscode.workspace.onDidChangeTextDocument((e) => {
+        if (!isSaving && document && e.document.uri.toString() === document.uri.toString()) {
+          originalSourceHtml = document.getText();
+          const reParsed = parseAndTagHtml(originalSourceHtml);
+          currentOffsetMap = reParsed.offsetMap;
+        }
+      });
+      context.subscriptions.push(changeSubscription);
 
       panel.webview.html = getWebviewContent(taggedHtml, baseUri);
 
@@ -159,6 +170,11 @@ export function activate(context: vscode.ExtensionContext): void {
             (message.command === 'save' || message.command === 'saveSurgical') &&
             document
           ) {
+            if (isSaving) {
+              return;
+            }
+            isSaving = true;
+
             try {
               let finalHtml = message.fallbackHtml || message.html || '';
 
@@ -176,26 +192,56 @@ export function activate(context: vscode.ExtensionContext): void {
                 );
                 if (patched && patched !== originalSourceHtml) {
                   finalHtml = patched;
-                  originalSourceHtml = patched;
-                  const reParsed = parseAndTagHtml(patched);
-                  currentOffsetMap = reParsed.offsetMap;
                 }
               }
 
               if (finalHtml) {
-                const edit = new vscode.WorkspaceEdit();
+                const currentText = document.getText();
                 const fullRange = new vscode.Range(
                   document.positionAt(0),
-                  document.positionAt(document.getText().length)
+                  document.positionAt(currentText.length)
                 );
+                const edit = new vscode.WorkspaceEdit();
                 edit.replace(document.uri, fullRange, finalHtml);
-                await vscode.workspace.applyEdit(edit);
-                await document.save();
-                isDirty = false;
-                lastUnsavedHTML = null;
+
+                let success = await vscode.workspace.applyEdit(edit);
+                if (!success) {
+                  // Retry once after 50ms if workspace edit failed due to doc state locking
+                  await new Promise((resolve) => setTimeout(resolve, 50));
+                  const freshText = document.getText();
+                  const retryRange = new vscode.Range(
+                    document.positionAt(0),
+                    document.positionAt(freshText.length)
+                  );
+                  const retryEdit = new vscode.WorkspaceEdit();
+                  retryEdit.replace(document.uri, retryRange, finalHtml);
+                  success = await vscode.workspace.applyEdit(retryEdit);
+                }
+
+                if (success) {
+                  await document.save();
+                  isDirty = false;
+                  lastUnsavedHTML = null;
+
+                  // Post-Save Re-synchronization: Formatter might have reformatted document.getText() on save!
+                  originalSourceHtml = document.getText();
+                  const reParsed = parseAndTagHtml(originalSourceHtml);
+                  currentOffsetMap = reParsed.offsetMap;
+
+                  panel.webview.postMessage({ command: 'saveCompleted', success: true });
+                } else {
+                  throw new Error('Workspace edit application failed');
+                }
               }
             } catch (err: any) {
               vscode.window.showErrorMessage(`Error saving file: ${err.message}`);
+              panel.webview.postMessage({
+                command: 'saveCompleted',
+                success: false,
+                error: err.message
+              });
+            } finally {
+              isSaving = false;
             }
           }
         },
