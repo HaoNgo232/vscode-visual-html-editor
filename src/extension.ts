@@ -163,6 +163,15 @@ export function activate(context: vscode.ExtensionContext): void {
             try {
               const relPath = (message as any).relativePath.split('?')[0].split('#')[0];
               const targetUri = vscode.Uri.joinPath(fileFolder, relPath);
+
+              // Security Path Traversal Guard: Restrict file reading to allowed workspace roots
+              const isAllowed = localResourceRoots.some((root) =>
+                targetUri.fsPath.startsWith(root.fsPath)
+              );
+              if (!isAllowed) {
+                throw new Error('Security Error: Access denied to path outside workspace.');
+              }
+
               const fileBytes = await vscode.workspace.fs.readFile(targetUri);
               const content = new TextDecoder('utf-8').decode(fileBytes);
               panel.webview.postMessage({
