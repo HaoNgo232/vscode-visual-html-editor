@@ -12,6 +12,7 @@ sequenceDiagram
     actor User
     participant VSC as VS Code Extension Host (src/extension.ts)
     participant WV as Webview Panel (src/webview/script.ts)
+    participant IF as Editor Iframe (src/webview/modules/polyfill.ts)
     participant MAP as Surgical Mapper (src/utils/htmlSurgicalMapper.ts)
     participant FS as Local File System
 
@@ -21,7 +22,18 @@ sequenceDiagram
     VSC->>MAP: parseAndTagHtml(rawHtml)
     MAP-->>VSC: taggedHtml (data-runtime-id) + offsetMap
     VSC->>WV: Create Webview Panel & inject tagged HTML
-    WV-->>User: Render visual page with contenteditable / designMode active
+    WV->>IF: Write frame content (prepareDocumentHtml + resolveNestedIframes)
+    IF-->>User: Render visual page with contenteditable / designMode active
+
+    opt Local Resource IPC Bridge (fetch / relative resource request)
+        IF->>WV: window.parent.postMessage({ command: 'fetchLocalFile', relativePath, requestId })
+        WV->>VSC: vscode.postMessage({ command: 'fetchLocalFile', ... })
+        VSC->>VSC: Validate path against localResourceRoots (Path Traversal Guard)
+        VSC->>FS: vscode.workspace.fs.readFile(targetUri)
+        FS-->>VSC: File content bytes
+        VSC-->>WV: postMessage({ command: 'fetchLocalFileResponse', success: true, content })
+        WV-->>IF: iframe.contentWindow.postMessage(data) -> Resolve polyfill Promise
+    end
 
     loop Editing & Interactions
         User->>WV: Edit text / Switch Viewport / Ctrl+Scroll (Zoom)
@@ -72,6 +84,7 @@ vscode-visual-html-editor/
 │           ├── history.ts     <-- Undo & redo execution module
 │           ├── menu.ts        <-- Popover menus & help modal controller
 │           ├── mode.ts        <-- Edit vs. Preview mode toggler
+│           ├── polyfill.ts    <-- Local resource IPC polyfill for iframe fetch/XMLHttpRequest
 │           ├── saveState.ts   <-- Persistence status, auto-save & surgical save runner
 │           ├── state.ts       <-- Reactive application state container
 │           ├── viewport.ts    <-- Frame dimensions switcher (desktop, tablet, mobile)
@@ -102,11 +115,21 @@ vscode-visual-html-editor/
   - Handles IPC messages (`onDidReceiveMessage`) from Webview.
   - Applies surgical patches via `applySurgicalPatches()` and writes clean changes directly to disk using `vscode.workspace.applyEdit()`.
   - Intercepts panel disposal (`panel.onDidDispose`) with unsaved changes protection prompt.
+  - Enforces **Security Path Traversal Guard**: validates requested relative local resource paths against `localResourceRoots` (document folder + workspace roots) via `targetUri.fsPath.startsWith(root.fsPath)` before serving content through `vscode.workspace.fs.readFile()`.
 
 ### 3.2 Webview Runtime & Modules (`src/webview/`)
 - **Template & Assets (`editorContent.ts`, `template.html`, `style.css`, `codicon.css`)**:
   - Bundles CSS styles, VS Code Codicons, HTML structure, and JS logic into a secure Webview page string.
   - Safely escapes script tags (`\u003c`) to prevent Webview injection crashes.
+- **Document Preparation & Parsing (`prepareDocumentHtml()`)**:
+  - Leverages browser-native `DOMParser` (`text/html`) to parse raw document strings.
+  - Injects `<base href="...">` and the inline `#vhe-fetch-polyfill` script into the document `<head>` prior to iframe `document.write()`.
+  - Preserves original `<!DOCTYPE html>` declarations.
+- **Nested Iframe Resolution & Editing (`resolveNestedIframes()`, `enableNestedDocEditing()`)**:
+  - `resolveNestedIframes()`: Recursively locates nested `<iframe src="...">` elements, fetches relative target resources, and converts them to inline `srcdoc` attributes so sub-documents render within restricted webview sandboxes.
+  - `enableNestedDocEditing()`: Attaches edit mode bindings (`contentEditable`, `designMode`, and mutation observers) to nested iframe document instances to enable inline visual editing across nested sub-trees.
+- **Fetch Polyfill Module (`modules/polyfill.ts`)**:
+  - Overrides `window.fetch` inside iframe contexts to intercept relative URL resource calls and route them across webview boundaries via postMessage IPC.
 - **Command Registry (`modules/commandRegistry.ts`)**:
   - Centralized dispatcher mapping string command IDs (e.g. `save`, `zoom-in`, `set-viewport`) to handler functions.
   - Delegates click events from `[data-command]` DOM attributes.
@@ -124,6 +147,16 @@ vscode-visual-html-editor/
   - `htmlTypes.ts`: Standalone interface contracts (`ElementOffset`, `SurgicalMapResult`, `SurgicalChange`) with zero imports to eliminate circular dependencies.
   - `parseAndTagHtml()`: Leverages HTML5-compliant `parse5` AST parser with `sourceCodeLocationInfo: true` to assign unique `data-runtime-id="e1"` tags to opening elements and record exact character ranges (`outerStart`, `outerEnd`, `innerStart`, `innerEnd`).
   - `applySurgicalPatches()`: Sorts changes in descending order of character offset (`innerStart`) to apply targeted innerHTML updates without corrupting remaining character offsets or original formatting.
+
+### 3.4 Local Resource IPC Bridge
+- **End-to-End Flow**:
+  1. **Iframe Polyfill (`src/webview/modules/polyfill.ts`)**: Intercepts relative non-HTTP/HTTPS `fetch()` calls inside the preview iframe. Generates a unique `requestId` and posts a message `{ command: 'fetchLocalFile', relativePath, requestId }` to `window.parent`.
+  2. **Webview Script (`src/webview/script.ts`)**: Relays `fetchLocalFile` payload from iframe window to Extension Host using `vscode.postMessage()`.
+  3. **Extension Host (`src/extension.ts`)**:
+     - Evaluates path safety via **Security Path Traversal Guard** (`localResourceRoots`).
+     - Reads file asynchronously using `vscode.workspace.fs.readFile(targetUri)`.
+     - Returns `{ command: 'fetchLocalFileResponse', requestId, success: true, content }` to webview.
+  4. **Promise Resolution**: Webview forwards response back into `iframe.contentWindow.postMessage()`. The fetch polyfill resolves the awaiting Promise with a synthetic HTTP `Response(content, { status: 200 })` object.
 
 ---
 
@@ -148,3 +181,4 @@ vscode-visual-html-editor/
 5. **Decoupled Module & Command Architecture**:
    - *Decision*: Split webview logic into standalone domain modules (`mode`, `history`, `viewport`, `zoom`, `saveState`, `menu`) coordinated via `commandRegistry`.
    - *Rationale*: High maintainability, clear separation of concerns, and clean testability.
+

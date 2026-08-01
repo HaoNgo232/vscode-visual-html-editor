@@ -23,7 +23,7 @@ git clone https://github.com/HaoNgo232/vscode-visual-html-editor.git
 cd vscode-visual-html-editor
 bun install
 bun run package
-code --install-extension visual-html-live-editor-0.0.1.vsix --force
+code --install-extension visual-html-live-editor-0.0.2.vsix --force
 ```
 
 ---
@@ -35,6 +35,8 @@ code --install-extension visual-html-live-editor-0.0.1.vsix --force
 - **Auto-Save**: Automatically saves your edits in the background as you type.
 - **Device Preview**: Switch between Desktop, Tablet, and Mobile views to test responsive layouts.
 - **Instant PDF Export**: Export your rendered HTML directly to a PDF document in one click.
+- **Multi-File HTML Support**: Open HTML files that reference other local HTML files (e.g., iframe-based presentations). Local CSS, JS, and images are loaded automatically.
+- **Security**: Path traversal protection ensures only files within your workspace can be accessed.
 
 ---
 

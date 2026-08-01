@@ -27,6 +27,13 @@ High-density, token-efficient status summary for developers and AI agents.
 | **v0.0.1 Native DesignMode Undo**  | ✅ Done | Preserved native Chromium `designMode` Undo memory across saves by eliminating unwanted iframe reloads.                |
 | **v0.0.1 Reload Document**         | ✅ Done | 1-click Reload Document button (`🔄 Reload`) on toolbar & popover menu to re-sync from disk.                           |
 | **v0.0.1 Test Coverage**           | ✅ Done | 47/47 regression & unit tests passing (`bun test`).                                                                    |
+| **v0.0.2 Fetch Polyfill Module**   | ✅ Done | Extracted raw string into typed TS module (`src/webview/modules/polyfill.ts`) with lint/highlight support.             |
+| **v0.0.2 DOMParser Prep**          | ✅ Done | Replaced fragile regex with W3C DOMParser in `prepareDocumentHtml()` for base tag and script injection.                |
+| **v0.0.2 fetchLocalFile IPC**      | ✅ Done | Extension Host reads local files on behalf of webview iframe, bypassing CORS.                                           |
+| **v0.0.2 resolveNestedIframes**   | ✅ Done | Fetches local iframe `src` content and converts to `srcdoc`.                                                           |
+| **v0.0.2 enableNestedDocEditing** | ✅ Done | Activates `designMode` and mutation tracking inside child iframes.                                                     |
+| **v0.0.2 Path Traversal Guard**   | ✅ Done | Validates file paths stay within workspace roots for security.                                                         |
+| **v0.0.2 Test Coverage**          | ✅ Done | 49/49 regression & unit tests passing (`bun test`).                                                                    |
 
 ---
 
