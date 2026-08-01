@@ -85,12 +85,13 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
   });
 
   describe('6. Save & Zoom Cleanup Protocol Tests', () => {
-    it('should contain temporary zoom stripping logic prior to save', () => {
+    it('should contain temporary zoom stripping and sanitizeNode logic prior to save', () => {
       const result = getWebviewContent('<div>Content</div>');
 
       expect(result).toContain('doc.documentElement.style.zoom = ""');
       expect(result).toContain('currentHTML');
-      expect(result).toContain('outerHTML');
+      expect(result).toContain('sanitizeNode');
+      expect(result).toContain('removeAttribute("style")');
       expect(result).toContain('doc.documentElement.style.zoom = originalZoom');
     });
   });
@@ -133,6 +134,16 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
 
       expect(result).toContain('export-pdf');
       expect(result).toContain('print()');
+    });
+  });
+
+  describe('10. Scoped Ctrl+A Text Selection Protocol Tests', () => {
+    it('should contain scoped Ctrl+A selection handler for active element', () => {
+      const result = getWebviewContent('<div>Content</div>');
+
+      expect(result).toContain('.vhe-editing-active');
+      expect(result).toContain('selectNodeContents');
+      expect(result).toContain('getSelection');
     });
   });
 });

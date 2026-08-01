@@ -84,32 +84,33 @@ export function initSaveModule(
     }
   }
 
-  function getCleanElementInnerHTML(elem: Element): string {
-    const clone = elem.cloneNode(true) as Element;
-    clone.removeAttribute('data-runtime-id');
-    clone.classList.remove('vhe-editing-active');
-    if (clone.classList.length === 0 || !clone.getAttribute('class')) {
-      clone.removeAttribute('class');
+  function sanitizeNode(node: Element) {
+    node.removeAttribute('data-runtime-id');
+    node.classList.remove('vhe-editing-active');
+    if (node.classList.length === 0 || node.getAttribute('class') === '') {
+      node.removeAttribute('class');
+    }
+    if (node.getAttribute('style') === '' || node.getAttribute('style')?.trim() === '') {
+      node.removeAttribute('style');
     }
 
-    const runtimeElems = clone.querySelectorAll('[data-runtime-id]');
-    for (let i = 0; i < runtimeElems.length; i++) {
-      runtimeElems[i].removeAttribute('data-runtime-id');
-    }
-    const activeElems = clone.querySelectorAll('.vhe-editing-active');
-    for (let i = 0; i < activeElems.length; i++) {
-      activeElems[i].classList.remove('vhe-editing-active');
-      if (activeElems[i].classList.length === 0 || !activeElems[i].getAttribute('class')) {
-        activeElems[i].removeAttribute('class');
+    const allElements = node.querySelectorAll('*');
+    for (let i = 0; i < allElements.length; i++) {
+      const el = allElements[i];
+      el.removeAttribute('data-runtime-id');
+      el.classList.remove('vhe-editing-active');
+      if (el.classList.length === 0 || el.getAttribute('class') === '') {
+        el.removeAttribute('class');
+      }
+      if (el.getAttribute('style') === '' || el.getAttribute('style')?.trim() === '') {
+        el.removeAttribute('style');
       }
     }
+  }
 
-    const emptyClassElems = clone.querySelectorAll('[class=""]');
-    for (let i = 0; i < emptyClassElems.length; i++) {
-      emptyClassElems[i].removeAttribute('class');
-    }
-
-    if ((clone as HTMLElement).style) (clone as HTMLElement).style.zoom = '';
+  function getCleanElementInnerHTML(elem: Element): string {
+    const clone = elem.cloneNode(true) as Element;
+    sanitizeNode(clone);
     return clone.innerHTML;
   }
 
@@ -129,31 +130,10 @@ export function initSaveModule(
     doc.documentElement.style.zoom = '';
 
     const cloneDoc = doc.documentElement.cloneNode(true) as HTMLElement;
-    cloneDoc.removeAttribute('data-runtime-id');
-    cloneDoc.classList.remove('vhe-editing-active');
-    if (cloneDoc.classList.length === 0 || !cloneDoc.getAttribute('class')) {
-      cloneDoc.removeAttribute('class');
-    }
-
     const injectedStyle = cloneDoc.querySelector('#vhe-style-injection');
     if (injectedStyle) injectedStyle.remove();
 
-    const runtimeElems = cloneDoc.querySelectorAll('[data-runtime-id]');
-    for (let i = 0; i < runtimeElems.length; i++) {
-      runtimeElems[i].removeAttribute('data-runtime-id');
-    }
-    const activeElems = cloneDoc.querySelectorAll('.vhe-editing-active');
-    for (let i = 0; i < activeElems.length; i++) {
-      activeElems[i].classList.remove('vhe-editing-active');
-      if (activeElems[i].classList.length === 0 || !activeElems[i].getAttribute('class')) {
-        activeElems[i].removeAttribute('class');
-      }
-    }
-
-    const emptyClassElems = cloneDoc.querySelectorAll('[class=""]');
-    for (let i = 0; i < emptyClassElems.length; i++) {
-      emptyClassElems[i].removeAttribute('class');
-    }
+    sanitizeNode(cloneDoc);
 
     const currentHTML = '<!DOCTYPE html>\n' + cloneDoc.outerHTML;
     doc.documentElement.style.zoom = originalZoom;

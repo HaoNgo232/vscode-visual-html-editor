@@ -100,6 +100,23 @@ function handleKeydown(e: KeyboardEvent) {
     } else if (key === 'y') {
       e.preventDefault();
       historyModule.redo();
+    } else if (key === 'a') {
+      const doc =
+        iframe.contentDocument || (iframe.contentWindow ? iframe.contentWindow.document : null);
+      if (doc) {
+        const activeElem = doc.querySelector('.vhe-editing-active') as HTMLElement | null;
+        if (activeElem && activeElem !== doc.body && activeElem !== doc.documentElement) {
+          e.preventDefault();
+          const win = iframe.contentWindow || window;
+          const selection = win.getSelection();
+          if (selection) {
+            const range = doc.createRange();
+            range.selectNodeContents(activeElem);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+        }
+      }
     }
   }
 }
