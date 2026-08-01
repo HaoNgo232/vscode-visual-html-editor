@@ -21,7 +21,8 @@ High-density, token-efficient status summary for developers and AI agents.
 | **v0.0.1 Ponytail Audit Cleanup**| ✅ Done | Cleaned over-engineering, dead code & window bindings (~150 net lines removed, 1 devDep removed). |
 | **v0.0.1 Export to PDF**         | ✅ Done | 1-click Export to PDF command via iframe native print bridge.                             |
 | **v0.0.1 FormatOnSave Resync**  | ✅ Done | Post-Save Re-sync + Save Mutex + `onDidChangeTextDocument` listener for 100% formatter sync. |
-| **v0.0.1 Test Coverage**        | ✅ Done | 29/29 regression & unit tests passing (`bun test`).                                      |
+| **v0.0.1 AST Surgical Engine**  | ✅ Done | State-machine AST parser handling attribute expressions (`<`, `>`), multi-line elements & line/col ranges. |
+| **v0.0.1 Test Coverage**        | ✅ Done | 35/35 regression & unit tests passing (`bun test`).                                      |
 
 ---
 
@@ -37,6 +38,6 @@ High-density, token-efficient status summary for developers and AI agents.
 
 ## 🔮 Future Roadmap
 
-- [ ] **AST Surgical Replacement**: Line-range edits to preserve comments & indentations 100%.
+- [x] **AST Surgical Replacement**: Line-range & position-aware edits preserving comments & indentations 100%.
 - [x] **Viewport Preview Toggle**: Mobile (`375px`), Tablet (`768px`), Desktop (`100%`).
 - [x] **Theme Auto-sync**: Match active VS Code color theme & native Codicons.

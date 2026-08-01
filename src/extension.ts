@@ -214,6 +214,11 @@ export function activate(context: vscode.ExtensionContext): void {
             isSaving = true;
 
             try {
+              // Ensure document instance is live and open before editing
+              if (document.isClosed) {
+                document = await vscode.workspace.openTextDocument(document.uri);
+              }
+
               let finalHtml = message.fallbackHtml || message.html || '';
 
               if (
@@ -249,6 +254,9 @@ export function activate(context: vscode.ExtensionContext): void {
                   );
                   // Retry once after 50ms if workspace edit failed due to doc state locking
                   await new Promise((resolve) => setTimeout(resolve, 50));
+                  if (document.isClosed) {
+                    document = await vscode.workspace.openTextDocument(document.uri);
+                  }
                   const freshText = document.getText();
                   const retryRange = new vscode.Range(
                     document.positionAt(0),
@@ -260,6 +268,10 @@ export function activate(context: vscode.ExtensionContext): void {
                 }
 
                 if (success) {
+                  // Ensure document is live right before calling save()
+                  if (document.isClosed) {
+                    document = await vscode.workspace.openTextDocument(document.uri);
+                  }
                   await document.save();
                   isDirty = false;
                   lastUnsavedHTML = null;
@@ -269,7 +281,11 @@ export function activate(context: vscode.ExtensionContext): void {
                   const reParsed = parseAndTagHtml(originalSourceHtml);
                   currentOffsetMap = reParsed.offsetMap;
 
-                  panel.webview.postMessage({ command: 'saveCompleted', success: true });
+                  panel.webview.postMessage({
+                    command: 'saveCompleted',
+                    success: true,
+                    taggedHtml: reParsed.taggedHtml
+                  });
                 } else {
                   throw new Error(
                     `Failed to apply workspace edit to file "${fileName}". The text document may be locked or modified concurrently by another extension.`
@@ -311,6 +327,9 @@ export function activate(context: vscode.ExtensionContext): void {
 
             if (choice === 'Save Now') {
               try {
+                if (document.isClosed) {
+                  document = await vscode.workspace.openTextDocument(document.uri);
+                }
                 const edit = new vscode.WorkspaceEdit();
                 const fullRange = new vscode.Range(
                   document.positionAt(0),
@@ -327,7 +346,6 @@ export function activate(context: vscode.ExtensionContext): void {
           }
         },
         null,
-        context.subscriptions
       );
     }
   );

@@ -286,6 +286,64 @@ function init() {
   }
 }
 
+(window as any).updateIframeContent = (newHtml: string) => {
+  try {
+    const doc =
+      iframe.contentDocument || (iframe.contentWindow ? iframe.contentWindow.document : null);
+    if (!doc) return;
+
+    const scrollTop = doc.documentElement.scrollTop || doc.body.scrollTop;
+    const scrollLeft = doc.documentElement.scrollLeft || doc.body.scrollLeft;
+
+    doc.open();
+    doc.write(newHtml);
+    doc.close();
+
+    if (baseUri && doc.head && !doc.querySelector('base')) {
+      const baseElem = doc.createElement('base');
+      baseElem.href = baseUri;
+      doc.head.insertBefore(baseElem, doc.head.firstChild);
+    }
+
+    if (doc.head && !doc.querySelector('#vhe-style-injection')) {
+      const styleElem = doc.createElement('style');
+      styleElem.id = 'vhe-style-injection';
+      styleElem.textContent = `
+        .vhe-editing-active {
+          outline: 1.5px solid rgba(59, 130, 246, 0.45) !important;
+          outline-offset: 2px !important;
+          border-radius: 2px !important;
+          background-color: rgba(59, 130, 246, 0.03) !important;
+        }
+      `;
+      doc.head.appendChild(styleElem);
+    }
+
+    doc.addEventListener('click', (e) => {
+      if (getState().mode !== 'edit') return;
+      const target = (e.target as HTMLElement).closest('*') as HTMLElement | null;
+      const activeElems = doc.querySelectorAll('.vhe-editing-active');
+      for (let i = 0; i < activeElems.length; i++) {
+        activeElems[i].classList.remove('vhe-editing-active');
+      }
+      if (target && target !== doc.body && target !== doc.documentElement) {
+        target.classList.add('vhe-editing-active');
+      }
+    });
+
+    doc.designMode = 'on';
+    registerMutationTracker(doc);
+    doc.addEventListener('wheel', handleWheel, { passive: false });
+    doc.addEventListener('keydown', handleKeydown);
+
+    doc.documentElement.scrollTop = doc.body.scrollTop = scrollTop;
+    doc.documentElement.scrollLeft = doc.body.scrollLeft = scrollLeft;
+    zoomModule.applyZoom();
+  } catch (err: unknown) {
+    console.warn('[Visual HTML Editor Iframe Update Notice]', err);
+  }
+};
+
 window.addEventListener('wheel', handleWheel, { passive: false });
 window.addEventListener('keydown', handleKeydown);
 
