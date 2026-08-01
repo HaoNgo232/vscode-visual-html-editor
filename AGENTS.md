@@ -36,7 +36,7 @@ Instructions and guidelines for AI agents and human developers modifying or exte
    - Do **NOT** introduce telemetry, remote network requests, or external tracking dependencies.
 
 4. **Code Modification Rules**:
-   - Keep the codebase modular (`src/utils/`, `src/webview/`, `src/extension.ts`).
+   - Keep the codebase modular (`src/utils/`, `src/webview/`, `src/webview/modules/`, `src/extension.ts`).
    - Before saving to disk, ensure transient styles (such as `style="zoom: ..."` applied during live preview) are temporarily stripped so source files are not polluted.
    - Always run unit tests (`bun test`) and compilation (`bun run build`) before packaging.
 
