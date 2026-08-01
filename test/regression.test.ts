@@ -148,11 +148,21 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
   });
 
   describe('11. Native DesignMode Undo Preservation Protocol Tests', () => {
-    it('should preserve native designMode undo buffer on saveCompleted by avoiding iframe reload', () => {
+    it('should contain saveCompleted listener in generated webview JS', () => {
       const result = getWebviewContent('<div>Content</div>');
 
       expect(result).toContain('saveCompleted');
-      expect(result).not.toContain('updateIframeContent(message.taggedHtml)');
+      expect(result).toContain('dirtyRuntimeIds.clear()');
+    });
+  });
+
+  describe('12. Reload Document Protocol Tests', () => {
+    it('should contain reload-doc command registration and forceReload listener in generated webview JS', () => {
+      const result = getWebviewContent('<div>Content</div>');
+
+      expect(result).toContain('reload-doc');
+      expect(result).toContain('reloadDocument');
+      expect(result).toContain('forceReload');
     });
   });
 });

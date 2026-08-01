@@ -183,6 +183,16 @@ export function initSaveModule(
     }
   }
 
+  function reloadDocument() {
+    if (getState().isDirty) {
+      const confirmDiscard = confirm(
+        'You have unsaved changes. Reloading will discard them and re-sync from disk. Continue?'
+      );
+      if (!confirmDiscard) return;
+    }
+    vscode.postMessage({ command: 'reloadDocument' });
+  }
+
   window.addEventListener('message', (event) => {
     const message = event.data;
     if (message && message.command === 'saveCompleted') {
@@ -196,6 +206,13 @@ export function initSaveModule(
           (window as any).showError(`Save failed: ${message.error || 'Unknown error'}`);
         }
       }
+    } else if (message && message.command === 'forceReload' && message.taggedHtml) {
+      setDirtyState(false);
+      dirtyRuntimeIds.clear();
+      setSaveStatus('saved');
+      if (typeof (window as any).updateIframeContent === 'function') {
+        (window as any).updateIframeContent(message.taggedHtml);
+      }
     }
   });
 
@@ -208,6 +225,14 @@ export function initSaveModule(
   });
 
   commandRegistry.register({
+    id: 'reload-doc',
+    group: 'document',
+    icon: 'refresh',
+    title: 'Reload Document from Disk',
+    execute: reloadDocument
+  });
+
+  commandRegistry.register({
     id: 'toggle-auto-save',
     group: 'settings',
     icon: 'zap',
@@ -215,5 +240,5 @@ export function initSaveModule(
     execute: (enabled?: boolean) => toggleAutoSave(enabled)
   });
 
-  return { save, setDirtyState, toggleAutoSave, debouncedSave, getCleanHTML };
+  return { save, setDirtyState, toggleAutoSave, reloadDocument, debouncedSave, getCleanHTML };
 }

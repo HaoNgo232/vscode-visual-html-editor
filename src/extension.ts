@@ -154,6 +154,20 @@ export function activate(context: vscode.ExtensionContext): void {
             if (message.html) {
               lastUnsavedHTML = message.html;
             }
+          } else if (message.command === 'reloadDocument' && document) {
+            try {
+              originalSourceHtml = document.getText();
+              const reParsed = parseAndTagHtml(originalSourceHtml);
+              currentOffsetMap = reParsed.offsetMap;
+              panel.webview.postMessage({
+                command: 'forceReload',
+                taggedHtml: reParsed.taggedHtml
+              });
+            } catch (err: unknown) {
+              vscode.window.showErrorMessage(
+                `Failed to reload document from disk: ${formatRawError(err)}`
+              );
+            }
           } else if (message.command === 'exportPdf' && message.html) {
             try {
               const saveUri = await vscode.window.showSaveDialog({
