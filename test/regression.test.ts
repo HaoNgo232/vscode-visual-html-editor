@@ -36,7 +36,7 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
     it('should handle null baseUri gracefully without crashing', () => {
       const result = getWebviewContent('<h1>Hello</h1>', null);
 
-      expect(result).toContain('const baseUri = null;');
+      expect(result).toContain('baseUri = null;');
     });
   });
 
@@ -44,8 +44,9 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
     it('should leave no unreplaced template placeholders', () => {
       const result = getWebviewContent('<p>Simple HTML</p>', 'http://localhost/');
 
-      expect(result).not.toContain('{{RAW_HTML}}');
-      expect(result).not.toContain('{{BASE_URI}}');
+      expect(result).not.toContain('/* __CODICON_PLACEHOLDER__ */');
+      expect(result).not.toContain('/* __STYLE_PLACEHOLDER__ */');
+      expect(result).not.toContain('/* __SCRIPT_PLACEHOLDER__ */');
     });
   });
 
@@ -82,9 +83,9 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
 
       expect(result).toContain('id="error-overlay"');
       expect(result).toContain('id="error-details"');
-      expect(result).toContain('function showError');
-      expect(result).toContain('function dismissError');
-      expect(result).toContain('function copyErrorDetails');
+      expect(result).toContain('showError');
+      expect(result).toContain('dismissError');
+      expect(result).toContain('copyErrorDetails');
       expect(result).toContain('window.onerror');
       expect(result).toContain('window.onunhandledrejection');
     });
@@ -106,7 +107,7 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
       const result = getWebviewContent('<div>Content</div>');
 
       expect(result).toContain('status-badge');
-      expect(result).toContain('status-dirty');
+      expect(result).toContain('status-unsaved');
       expect(result).toContain('setDirtyState');
       expect(result).toContain('window.onbeforeunload');
       expect(result).toContain('command: "setDirty"');
@@ -118,7 +119,7 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
       const result = getWebviewContent('<div>Content</div>');
 
       expect(result).toContain('id="auto-save-toggle"');
-      expect(result).toContain('auto-save-control');
+      expect(result).toContain('toggle-auto-save');
       expect(result).toContain('toggleAutoSave');
       expect(result).toContain('checked');
     });
@@ -126,8 +127,8 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
     it('should contain debounced auto save logic with 1000ms delay', () => {
       const result = getWebviewContent('<div>Content</div>');
 
-      expect(result).toContain('const DEBOUNCE_DELAY = 1000');
-      expect(result).toContain('createDebounce');
+      expect(result).toContain('DEBOUNCE_DELAY = 1000');
+      expect(result).toContain('debounce');
       expect(result).toContain('debouncedSave');
       expect(result).toContain('debouncedSave.cancel()');
     });

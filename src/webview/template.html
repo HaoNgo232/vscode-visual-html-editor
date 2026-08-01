@@ -4,38 +4,176 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
+      /* __CODICON_PLACEHOLDER__ */
       /* __STYLE_PLACEHOLDER__ */
     </style>
   </head>
   <body>
-    <div class="toolbar">
-      <div class="left-group">
-        <span class="hint">✏️ Click text to edit | <b>Ctrl + S</b> Save | <b>Ctrl + Scroll</b> / <b>Ctrl + +/-</b> Zoom</span>
-        <span class="status-badge status-saved" id="status-badge">✅ Saved</span>
+    <div class="toolbar" id="toolbar">
+      <!-- Left Group: Mode, History, Viewport -->
+      <div class="toolbar-group left-group">
+        <!-- Mode Switcher -->
+        <div class="segmented-control" id="mode-control">
+          <button class="tb-btn active" id="btn-mode-edit" data-command="mode-edit" title="Edit Mode (Click to edit elements)">
+            <i class="codicon codicon-edit"></i>
+            <span class="btn-label">Edit</span>
+          </button>
+          <button class="tb-btn" id="btn-mode-preview" data-command="mode-preview" title="Preview Mode (Read only)">
+            <i class="codicon codicon-eye"></i>
+            <span class="btn-label">Preview</span>
+          </button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <!-- History: Undo / Redo -->
+        <div class="button-group">
+          <button class="tb-btn icon-only" id="btn-undo" data-command="undo" title="Undo (Ctrl+Z)">
+            <i class="codicon codicon-undo"></i>
+          </button>
+          <button class="tb-btn icon-only" id="btn-redo" data-command="redo" title="Redo (Ctrl+Y)">
+            <i class="codicon codicon-redo"></i>
+          </button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <!-- Viewport Dropdown Menu -->
+        <div class="menu-container">
+          <button class="tb-btn" id="btn-viewport-toggle" data-command="toggle-viewport-menu" title="Viewport Frame Size">
+            <i class="codicon codicon-device-desktop" id="viewport-icon"></i>
+            <span class="btn-label" id="viewport-label">Desktop</span>
+            <i class="codicon codicon-chevron-down"></i>
+          </button>
+
+          <div class="popover-menu" id="viewport-menu">
+            <div class="menu-item active" data-command="set-viewport" data-value="desktop">
+              <i class="codicon codicon-device-desktop menu-icon"></i>
+              <span class="menu-label">Desktop (100%)</span>
+            </div>
+            <div class="menu-item" data-command="set-viewport" data-value="tablet">
+              <i class="codicon codicon-device-tablet menu-icon"></i>
+              <span class="menu-label">Tablet (768px)</span>
+            </div>
+            <div class="menu-item" data-command="set-viewport" data-value="mobile">
+              <i class="codicon codicon-device-mobile menu-icon"></i>
+              <span class="menu-label">Mobile (375px)</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="right-group">
-        <div class="auto-save-control" title="Toggle Auto Save (1s debounce)">
-          <label class="toggle-switch">
-            <input type="checkbox" id="auto-save-toggle" checked onchange="toggleAutoSave(this.checked)" />
-            <span class="slider"></span>
-          </label>
-          <span class="auto-save-label" id="auto-save-label" onclick="document.getElementById('auto-save-toggle').click()">⚡ Auto Save</span>
+
+      <!-- Right Group: Status, Zoom, Save, More -->
+      <div class="toolbar-group right-group">
+        <!-- Status Indicator -->
+        <div class="status-indicator status-saved" id="status-badge" title="Document Persistence Status">
+          <span class="status-dot" id="status-dot"></span>
+          <span class="status-text" id="status-text">Saved</span>
         </div>
-        <div class="zoom-controls">
-          <button class="zoom-btn" onclick="zoomChange(-0.1)" title="Zoom Out (Ctrl + -)">-</button>
-          <span class="zoom-badge" id="zoom-badge" onclick="resetZoom()" title="Click to reset zoom to 100%">100%</span>
-          <button class="zoom-btn" onclick="zoomChange(0.1)" title="Zoom In (Ctrl + +)">+</button>
+
+        <!-- Zoom Dropdown Menu -->
+        <div class="menu-container">
+          <button class="tb-btn" id="btn-zoom-toggle" data-command="toggle-zoom-menu" title="Zoom Level (Ctrl + Scroll / Ctrl + +/-)">
+            <span class="btn-label" id="zoom-badge">100%</span>
+            <i class="codicon codicon-chevron-down"></i>
+          </button>
+
+          <div class="popover-menu" id="zoom-menu">
+            <div class="menu-item" data-command="set-zoom" data-value="0.5">
+              <span class="menu-label">50%</span>
+            </div>
+            <div class="menu-item" data-command="set-zoom" data-value="0.75">
+              <span class="menu-label">75%</span>
+            </div>
+            <div class="menu-item active" data-command="set-zoom" data-value="1.0">
+              <span class="menu-label">100%</span>
+            </div>
+            <div class="menu-item" data-command="set-zoom" data-value="1.25">
+              <span class="menu-label">125%</span>
+            </div>
+            <div class="menu-item" data-command="set-zoom" data-value="1.5">
+              <span class="menu-label">150%</span>
+            </div>
+            <div class="menu-item" data-command="set-zoom" data-value="2.0">
+              <span class="menu-label">200%</span>
+            </div>
+          </div>
         </div>
-        <button class="btn" onclick="save()">💾 Save Now (Ctrl+S)</button>
+
+        <div class="toolbar-divider"></div>
+
+        <!-- Save Button -->
+        <button class="btn btn-save" id="btn-save" data-command="save" title="Save Changes (Ctrl+S)">
+          <i class="codicon codicon-save"></i>
+          <span class="btn-label">Save</span>
+        </button>
+
+        <!-- More (...) Menu Button -->
+        <div class="menu-container">
+          <button class="tb-btn icon-only" id="btn-more" data-command="toggle-menu" title="More Options">
+            <i class="codicon codicon-ellipsis"></i>
+          </button>
+          
+          <!-- Popover Menu -->
+          <div class="popover-menu right-aligned" id="more-menu">
+            <div class="menu-item" id="menu-item-auto-save" data-command="toggle-auto-save">
+              <i class="codicon codicon-zap menu-icon"></i>
+              <span class="menu-label">Auto Save</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="auto-save-toggle" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="menu-divider"></div>
+            <div class="menu-item" data-command="reset-zoom">
+              <i class="codicon codicon-zoom-actual menu-icon"></i>
+              <span class="menu-label">Reset Zoom (100%)</span>
+            </div>
+            <div class="menu-item" data-command="reload">
+              <i class="codicon codicon-refresh menu-icon"></i>
+              <span class="menu-label">Reload Document</span>
+            </div>
+            <div class="menu-divider"></div>
+            <div class="menu-item" data-command="show-help">
+              <i class="codicon codicon-question menu-icon"></i>
+              <span class="menu-label">Shortcuts & Help</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
+    <!-- Main Canvas & Frame Container -->
     <div class="editor-container" id="editor-container">
-      <iframe id="editor-frame"></iframe>
+      <div class="iframe-wrapper viewport-desktop" id="iframe-wrapper">
+        <iframe id="editor-frame"></iframe>
+      </div>
+
+      <!-- Help / Instructions Modal -->
+      <div class="modal-overlay" id="help-modal">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3><i class="codicon codicon-question"></i> Visual HTML Editor Quick Guide</h3>
+            <button class="modal-close" onclick="closeHelpModal()">&times;</button>
+          </div>
+          <div class="modal-body">
+            <ul>
+              <li><b>Click & Edit:</b> Click any text inside the document in <b>Edit Mode</b> to edit inline.</li>
+              <li><b>Save:</b> Press <b>Ctrl + S</b> or click the <b>Save</b> button to persist changes to disk.</li>
+              <li><b>Zoom:</b> Use <b>Ctrl + Scroll</b> or <b>Ctrl + +/-</b> (or the Zoom dropdown) to adjust zoom.</li>
+              <li><b>Undo / Redo:</b> Use <b>Ctrl + Z</b> and <b>Ctrl + Y</b> inside the editor.</li>
+              <li><b>Viewport:</b> Switch between Desktop, Tablet (768px), and Mobile (375px) previews.</li>
+            </ul>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeHelpModal()">Got it</button>
+          </div>
+        </div>
+      </div>
 
       <!-- Diagnostics & Error Overlay -->
       <div class="error-overlay" id="error-overlay">
-        <div class="error-title">⚠️ Visual HTML Editor Error Encountered</div>
+        <div class="error-title"><i class="codicon codicon-warning"></i> Visual HTML Editor Error Encountered</div>
         <div class="error-box" id="error-details">Unknown error occurred.</div>
         <div class="error-actions">
           <button class="btn btn-secondary" onclick="dismissError()">Dismiss Overlay</button>

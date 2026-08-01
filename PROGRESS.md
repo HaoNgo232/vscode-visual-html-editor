@@ -17,7 +17,8 @@ High-density, token-efficient status summary for developers and AI agents.
 | **v0.0.1 Auto Save & Debounce** | ✅ Done | Toggle switch (`⚡ Auto Save`), 1000ms debounce timer, auto-cancellation on manual save. |
 | **v0.0.1 Biome Tooling**        | ✅ Done | High-speed Biome linter & formatter setup (`bun run lint`, `bun run format`).            |
 | **v0.0.1 Surgical Save**        | ✅ Done | Granular offset-based surgical patch protocol (`parseAndTagHtml`, `applySurgicalPatches`). |
-| **v0.0.1 Test Coverage**        | ✅ Done | 26/26 regression & unit tests passing (`bun test`).                                      |
+| **v0.0.1 Toolbar Redesign**      | ✅ Done | Single-line toolbar, VS Code Codicons, theme variables, CommandRegistry, Viewport toggle. |
+| **v0.0.1 Test Coverage**        | ✅ Done | 28/28 regression & unit tests passing (`bun test`).                                      |
 
 ---
 
@@ -34,5 +35,5 @@ High-density, token-efficient status summary for developers and AI agents.
 ## 🔮 Future Roadmap
 
 - [ ] **AST Surgical Replacement**: Line-range edits to preserve comments & indentations 100%.
-- [ ] **Viewport Preview Toggle**: Mobile (`375px`), Tablet (`768px`), Desktop (`100%`).
-- [ ] **Theme Auto-sync**: Match active VS Code color theme.
+- [x] **Viewport Preview Toggle**: Mobile (`375px`), Tablet (`768px`), Desktop (`100%`).
+- [x] **Theme Auto-sync**: Match active VS Code color theme & native Codicons.

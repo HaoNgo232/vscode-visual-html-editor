@@ -1,10 +1,11 @@
+import codiconCSS from './codicon.css' with { type: 'text' };
 import scriptJS from './script.js' with { type: 'text' };
 import styleCSS from './style.css' with { type: 'text' };
 import templateHTML from './template.html' with { type: 'text' };
 
 /**
  * Generates the Webview HTML content for the Visual HTML Editor.
- * Decouples template.html, style.css, and script.js for clean maintainability.
+ * Decouples template.html, style.css, codicon.css, and script.js for clean maintainability.
  */
 export function getWebviewContent(htmlContent: string, baseUri: string | null = null): string {
   // Safely escape HTML/script tags so embedded HTML won't break the webview script tag
@@ -21,6 +22,7 @@ export function getWebviewContent(htmlContent: string, baseUri: string | null = 
     .replace('"__BASE_URI_PLACEHOLDER__"', safeBaseUri);
 
   const templateStr = (templateHTML as unknown as string)
+    .replace('/* __CODICON_PLACEHOLDER__ */', codiconCSS as unknown as string)
     .replace('/* __STYLE_PLACEHOLDER__ */', styleCSS as unknown as string)
     .replace('/* __SCRIPT_PLACEHOLDER__ */', fullScript);
 
