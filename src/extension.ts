@@ -48,6 +48,29 @@ function findChromeExecutable(): string | null {
   return null;
 }
 
+function formatRawError(error: unknown): string {
+  if (error === null || error === undefined) {
+    return 'Unknown error (null or undefined)';
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  if (error instanceof Error) {
+    const name = error.name || 'Error';
+    const msg = error.message || String(error);
+    const stack = error.stack ? `\n[Raw Stack Trace]\n${error.stack}` : '';
+    const cause = (error as any).cause
+      ? `\n[Raw Cause]\n${formatRawError((error as any).cause)}`
+      : '';
+    return `[${name}] ${msg}${stack}${cause}`;
+  }
+  try {
+    return `[Raw Error Object]\n${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`;
+  } catch {
+    return `[Raw Error String]\n${String(error)}`;
+  }
+}
+
 export function activate(context: vscode.ExtensionContext): void {
   const disposable = vscode.commands.registerCommand(
     'visual-html-editor.open',
@@ -94,10 +117,17 @@ export function activate(context: vscode.ExtensionContext): void {
 
       // Sync originalSourceHtml and offsetMap when document is edited externally
       const changeSubscription = vscode.workspace.onDidChangeTextDocument((e) => {
-        if (!isSaving && document && e.document.uri.toString() === document.uri.toString()) {
-          originalSourceHtml = document.getText();
-          const reParsed = parseAndTagHtml(originalSourceHtml);
-          currentOffsetMap = reParsed.offsetMap;
+        try {
+          if (!isSaving && document && e.document.uri.toString() === document.uri.toString()) {
+            originalSourceHtml = document.getText();
+            const reParsed = parseAndTagHtml(originalSourceHtml);
+            currentOffsetMap = reParsed.offsetMap;
+          }
+        } catch (err: unknown) {
+          console.error(
+            '[Visual HTML Editor onDidChangeTextDocument Raw Error]',
+            formatRawError(err)
+          );
         }
       });
       context.subscriptions.push(changeSubscription);
@@ -171,6 +201,14 @@ export function activate(context: vscode.ExtensionContext): void {
             document
           ) {
             if (isSaving) {
+              console.warn(
+                '[Visual HTML Editor] Save command ignored: another save operation is currently in progress.'
+              );
+              panel.webview.postMessage({
+                command: 'saveCompleted',
+                success: false,
+                error: 'Save command ignored: another save operation is in progress.'
+              });
               return;
             }
             isSaving = true;
@@ -206,6 +244,9 @@ export function activate(context: vscode.ExtensionContext): void {
 
                 let success = await vscode.workspace.applyEdit(edit);
                 if (!success) {
+                  console.warn(
+                    '[Visual HTML Editor] Initial workspace edit failed. Retrying after 50ms pause...'
+                  );
                   // Retry once after 50ms if workspace edit failed due to doc state locking
                   await new Promise((resolve) => setTimeout(resolve, 50));
                   const freshText = document.getText();
@@ -230,15 +271,24 @@ export function activate(context: vscode.ExtensionContext): void {
 
                   panel.webview.postMessage({ command: 'saveCompleted', success: true });
                 } else {
-                  throw new Error('Workspace edit application failed');
+                  throw new Error(
+                    `Failed to apply workspace edit to file "${fileName}". The text document may be locked or modified concurrently by another extension.`
+                  );
                 }
+              } else {
+                throw new Error('Save aborted: Generated HTML payload is empty.');
               }
-            } catch (err: any) {
-              vscode.window.showErrorMessage(`Error saving file: ${err.message}`);
+            } catch (err: unknown) {
+              const rawErrorPayload = formatRawError(err);
+              console.error('[Visual HTML Editor Raw Extension Error]', rawErrorPayload);
+              const displayMsg = err instanceof Error ? err.message : String(err);
+              vscode.window.showErrorMessage(
+                `[Visual HTML Editor Error] Save failed: ${displayMsg}`
+              );
               panel.webview.postMessage({
                 command: 'saveCompleted',
                 success: false,
-                error: err.message
+                error: rawErrorPayload
               });
             } finally {
               isSaving = false;

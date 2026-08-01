@@ -154,11 +154,24 @@ function registerMutationTracker(doc: Document) {
 }
 
 // Error Boundary & Helpers
-(window as any).showError = (msg: string) => {
-  console.error('[Visual HTML Editor Error]', msg);
-  lastError = msg;
+(window as any).showError = (err: unknown) => {
+  let rawText = '';
+  if (typeof err === 'string') {
+    rawText = err;
+  } else if (err instanceof Error) {
+    rawText = `[${err.name}] ${err.message}${err.stack ? `\nStack:\n${err.stack}` : ''}`;
+  } else {
+    try {
+      rawText = JSON.stringify(err, Object.getOwnPropertyNames(err as object), 2);
+    } catch {
+      rawText = String(err);
+    }
+  }
+
+  console.error('[Visual HTML Editor Raw Webview Error]', err);
+  lastError = rawText;
   if (errorDetails && errorOverlay) {
-    errorDetails.textContent = msg;
+    errorDetails.textContent = rawText;
     errorOverlay.style.display = 'flex';
   }
 };
@@ -182,16 +195,19 @@ commandRegistry.register({
 
 // Global Error Handlers
 window.onerror = (message, source, lineno, colno, error) => {
-  (window as any).showError(
-    'Webview Error: ' + message + ' (' + source + ':' + lineno + ':' + colno + ')'
-  );
+  if (error) {
+    (window as any).showError(error);
+  } else {
+    (window as any).showError(
+      `Webview Uncaught Exception: ${message} at ${source}:${lineno}:${colno}`
+    );
+  }
   return false;
 };
 
 window.onunhandledrejection = (event) => {
   (window as any).showError(
-    'Unhandled Promise Rejection: ' +
-      (event.reason ? event.reason.message || event.reason : 'Unknown reason')
+    event.reason || 'Unhandled Promise Rejection (Reason empty or undefined)'
   );
 };
 
