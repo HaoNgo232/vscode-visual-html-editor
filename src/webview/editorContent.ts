@@ -1,8 +1,10 @@
+import scriptJS from './script.js' with { type: 'text' };
+import styleCSS from './style.css' with { type: 'text' };
 import templateHTML from './template.html' with { type: 'text' };
 
 /**
  * Generates the Webview HTML content for the Visual HTML Editor.
- * Loads template.html and injects raw HTML and base URI safely.
+ * Decouples template.html, style.css, and script.js for clean maintainability.
  */
 export function getWebviewContent(htmlContent: string, baseUri: string | null = null): string {
   // Safely escape HTML/script tags so embedded HTML won't break the webview script tag
@@ -14,9 +16,13 @@ export function getWebviewContent(htmlContent: string, baseUri: string | null = 
 
   const safeBaseUri = baseUri ? JSON.stringify(baseUri) : 'null';
 
-  const templateStr = templateHTML as unknown as string;
-
-  return templateStr
+  const fullScript = (scriptJS as unknown as string)
     .replace('"__RAW_HTML_PLACEHOLDER__"', safeContent)
     .replace('"__BASE_URI_PLACEHOLDER__"', safeBaseUri);
+
+  const templateStr = (templateHTML as unknown as string)
+    .replace('/* __STYLE_PLACEHOLDER__ */', styleCSS as unknown as string)
+    .replace('/* __SCRIPT_PLACEHOLDER__ */', fullScript);
+
+  return templateStr;
 }

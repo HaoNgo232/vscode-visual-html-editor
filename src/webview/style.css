@@ -1,0 +1,254 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  overflow: hidden;
+}
+
+.toolbar {
+  background: #2b2b3b;
+  border-bottom: 1px solid #45475a;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  user-select: none;
+  z-index: 100;
+}
+
+.left-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.right-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn {
+  background: #89b4fa;
+  color: #11111b;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s;
+}
+
+.btn:hover {
+  background: #b4befe;
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  background: #181825;
+  border: 1px solid #45475a;
+  border-radius: 6px;
+  padding: 2px 6px;
+  gap: 4px;
+}
+
+.zoom-btn {
+  background: transparent;
+  color: #cdd6f4;
+  border: none;
+  width: 26px;
+  height: 26px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zoom-btn:hover {
+  background: #313244;
+  color: #89b4fa;
+}
+
+.zoom-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: #a6adc8;
+  min-width: 44px;
+  text-align: center;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.zoom-badge:hover {
+  color: #89b4fa;
+  background: #313244;
+}
+
+/* Auto Save Toggle Switch */
+.auto-save-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #181825;
+  border: 1px solid #45475a;
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+
+.auto-save-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #a6adc8;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 28px;
+  height: 16px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #45475a;
+  transition: 0.2s;
+  border-radius: 16px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 12px;
+  width: 12px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #cdd6f4;
+  transition: 0.2s;
+  border-radius: 50%;
+}
+
+.toggle-switch input:checked + .slider {
+  background-color: #a6e3a1;
+}
+
+.toggle-switch input:checked + .slider:before {
+  transform: translateX(12px);
+  background-color: #11111b;
+}
+
+.status-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+}
+
+.status-saved {
+  background: rgba(166, 227, 161, 0.15);
+  color: #a6e3a1;
+  border: 1px solid #a6e3a1;
+}
+
+.status-dirty {
+  background: rgba(243, 139, 168, 0.15);
+  color: #f38ba8;
+  border: 1px solid #f38ba8;
+}
+
+.editor-container {
+  flex: 1;
+  background: #ffffff;
+  overflow: auto;
+  position: relative;
+}
+
+iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #ffffff;
+  display: block;
+}
+
+.hint {
+  font-size: 13px;
+  color: #a6adc8;
+}
+
+/* Error Overlay */
+.error-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(24, 24, 37, 0.95);
+  color: #f38ba8;
+  padding: 24px;
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 200;
+  overflow: auto;
+  font-family: monospace;
+}
+
+.error-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #f38ba8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.error-box {
+  background: #11111b;
+  border: 1px solid #f38ba8;
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: #cdd6f4;
+}
+
+.error-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-secondary {
+  background: #313244;
+  color: #cdd6f4;
+  border: 1px solid #45475a;
+}
