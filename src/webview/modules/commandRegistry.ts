@@ -1,17 +1,17 @@
 export interface Command {
   id: string;
-  group: 'mode' | 'history' | 'viewport' | 'view' | 'document' | 'settings' | 'menu';
+  group?: 'mode' | 'history' | 'viewport' | 'view' | 'document' | 'settings' | 'menu';
   icon?: string;
   title?: string;
   execute: (args?: any) => void;
 }
 
-export class CommandRegistry {
-  private commands = new Map<string, Command>();
+export const commandRegistry = {
+  commands: new Map<string, Command>(),
 
   register(cmd: Command) {
     this.commands.set(cmd.id, cmd);
-  }
+  },
 
   execute(id: string, args?: any) {
     const cmd = this.commands.get(id);
@@ -27,11 +27,9 @@ export class CommandRegistry {
     } else {
       console.warn(`[CommandRegistry] Command '${id}' not found.`);
     }
-  }
+  },
 
   get(id: string) {
     return this.commands.get(id);
   }
-}
-
-export const commandRegistry = new CommandRegistry();
+};

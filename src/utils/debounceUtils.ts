@@ -4,7 +4,6 @@
 export interface DebouncedFunction<T extends (...args: any[]) => any> {
   (...args: Parameters<T>): void;
   cancel(): void;
-  isPending(): boolean;
 }
 
 export function debounce<T extends (...args: any[]) => any>(
@@ -28,10 +27,6 @@ export function debounce<T extends (...args: any[]) => any>(
       clearTimeout(timeoutId);
       timeoutId = null;
     }
-  };
-
-  debounced.isPending = () => {
-    return timeoutId !== null;
   };
 
   return debounced;

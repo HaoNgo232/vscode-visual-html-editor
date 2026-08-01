@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import { CommandRegistry } from '../src/webview/modules/commandRegistry';
+import { commandRegistry } from '../src/webview/modules/commandRegistry';
 
 describe('Command Registry Unit Test Suite (Bun)', () => {
   it('should register and execute commands correctly', () => {
-    const registry = new CommandRegistry();
     let executed = false;
     let receivedArg = '';
 
-    registry.register({
+    commandRegistry.register({
       id: 'test-command',
       group: 'document',
       execute: (arg: string) => {
@@ -16,17 +15,16 @@ describe('Command Registry Unit Test Suite (Bun)', () => {
       }
     });
 
-    expect(registry.get('test-command')).toBeDefined();
-    registry.execute('test-command', 'hello');
+    expect(commandRegistry.get('test-command')).toBeDefined();
+    commandRegistry.execute('test-command', 'hello');
 
     expect(executed).toBe(true);
     expect(receivedArg).toBe('hello');
   });
 
   it('should handle non-existent commands gracefully without throwing', () => {
-    const registry = new CommandRegistry();
     expect(() => {
-      registry.execute('unknown-cmd');
+      commandRegistry.execute('unknown-cmd');
     }).not.toThrow();
   });
 });

@@ -9,7 +9,6 @@ export interface AppState {
   viewport: ViewportMode;
   mode: EditMode;
   saveStatus: SaveStatus;
-  lastError: string;
 }
 
 const state: AppState = {
@@ -18,12 +17,8 @@ const state: AppState = {
   currentZoom: 1.0,
   viewport: 'desktop',
   mode: 'edit',
-  saveStatus: 'saved',
-  lastError: ''
+  saveStatus: 'saved'
 };
-
-type StateChangeListener = (state: AppState) => void;
-const listeners: StateChangeListener[] = [];
 
 export function getState(): Readonly<AppState> {
   return state;
@@ -31,11 +26,4 @@ export function getState(): Readonly<AppState> {
 
 export function updateState(partial: Partial<AppState>): void {
   Object.assign(state, partial);
-  for (const listener of listeners) {
-    listener(state);
-  }
-}
-
-export function onStateChange(listener: StateChangeListener): void {
-  listeners.push(listener);
 }

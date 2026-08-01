@@ -10,11 +10,9 @@ describe('Debounce Utility Test Suite (Bun)', () => {
 
     fn();
     expect(callCount).toBe(0);
-    expect(fn.isPending()).toBe(true);
 
     await new Promise((resolve) => setTimeout(resolve, 80));
     expect(callCount).toBe(1);
-    expect(fn.isPending()).toBe(false);
   });
 
   it('should reset timer if invoked again before delay passes', async () => {
@@ -44,9 +42,7 @@ describe('Debounce Utility Test Suite (Bun)', () => {
     }, 50);
 
     fn();
-    expect(fn.isPending()).toBe(true);
     fn.cancel();
-    expect(fn.isPending()).toBe(false);
 
     await new Promise((resolve) => setTimeout(resolve, 80));
     expect(callCount).toBe(0);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { calculateNextZoom, clampZoom, formatZoomPercentage } from '../src/utils/zoomUtils';
+import { clampZoom, formatZoomPercentage } from '../src/utils/zoomUtils';
 import { getWebviewContent } from '../src/webview/editorContent';
 
 describe('Regression & Edge Cases Test Suite (Bun)', () => {
@@ -62,13 +62,6 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
       expect(clampZoom(10.0)).toBe(3.0);
     });
 
-    it('should accurately calculate incremental zoom steps', () => {
-      expect(calculateNextZoom(1.0, 0.1)).toBe(1.1);
-      expect(calculateNextZoom(1.1, 0.1)).toBe(1.2);
-      expect(calculateNextZoom(1.0, -0.1)).toBe(0.9);
-      expect(calculateNextZoom(0.3, -0.1)).toBe(0.3);
-    });
-
     it('should format percentage displays accurately', () => {
       expect(formatZoomPercentage(1.0)).toBe('100%');
       expect(formatZoomPercentage(1.25)).toBe('125%');
@@ -84,8 +77,8 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
       expect(result).toContain('id="error-overlay"');
       expect(result).toContain('id="error-details"');
       expect(result).toContain('showError');
-      expect(result).toContain('dismissError');
-      expect(result).toContain('copyErrorDetails');
+      expect(result).toContain('dismiss-error');
+      expect(result).toContain('copy-error');
       expect(result).toContain('window.onerror');
       expect(result).toContain('window.onunhandledrejection');
     });

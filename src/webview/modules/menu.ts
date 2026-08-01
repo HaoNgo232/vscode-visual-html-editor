@@ -1,9 +1,6 @@
 import { commandRegistry } from './commandRegistry';
 
-export function initMenuModule(
-  moreMenu: HTMLElement,
-  helpModal: HTMLElement
-) {
+export function initMenuModule(moreMenu: HTMLElement, helpModal: HTMLElement) {
   function closeAllMenus() {
     const menus = document.querySelectorAll('.popover-menu');
     for (let i = 0; i < menus.length; i++) {
@@ -71,6 +68,13 @@ export function initMenuModule(
     icon: 'question',
     title: 'Shortcuts & Help',
     execute: () => showHelpModal(true)
+  });
+
+  commandRegistry.register({
+    id: 'close-help',
+    group: 'menu',
+    title: 'Close Help Modal',
+    execute: () => showHelpModal(false)
   });
 
   commandRegistry.register({

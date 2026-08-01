@@ -22,7 +22,6 @@ const statusDot = document.getElementById('status-dot') as HTMLElement;
 const statusText = document.getElementById('status-text') as HTMLElement;
 const saveBtn = document.getElementById('btn-save') as HTMLButtonElement;
 const autoSaveToggle = document.getElementById('auto-save-toggle') as HTMLInputElement;
-const moreBtn = document.getElementById('btn-more') as HTMLElement;
 const moreMenu = document.getElementById('more-menu') as HTMLElement;
 const helpModal = document.getElementById('help-modal') as HTMLElement;
 const errorOverlay = document.getElementById('error-overlay') as HTMLElement;
@@ -47,7 +46,7 @@ const saveModule = initSaveModule(
   baseUri,
   dirtyRuntimeIds
 );
-const menuModule = initMenuModule(moreMenu, helpModal);
+initMenuModule(moreMenu, helpModal);
 
 // Delegated Command Dispatcher for [data-command]
 document.addEventListener('click', (e) => {
@@ -157,7 +156,7 @@ function registerMutationTracker(doc: Document) {
   }
 }
 
-// Error Boundary & Helpers attached to window for test/global compatibility
+// Error Boundary & Helpers
 (window as any).showError = (msg: string) => {
   console.error('[Visual HTML Editor Error]', msg);
   lastError = msg;
@@ -167,22 +166,22 @@ function registerMutationTracker(doc: Document) {
   }
 };
 
-(window as any).dismissError = () => {
-  if (errorOverlay) {
-    errorOverlay.style.display = 'none';
+commandRegistry.register({
+  id: 'dismiss-error',
+  execute: () => {
+    if (errorOverlay) errorOverlay.style.display = 'none';
   }
-};
+});
 
-(window as any).copyErrorDetails = () => {
-  if (navigator.clipboard && lastError) {
-    navigator.clipboard.writeText(lastError);
-    alert('Copied error log to clipboard!');
+commandRegistry.register({
+  id: 'copy-error',
+  execute: () => {
+    if (navigator.clipboard && lastError) {
+      navigator.clipboard.writeText(lastError);
+      alert('Copied error log to clipboard!');
+    }
   }
-};
-
-(window as any).closeHelpModal = () => {
-  menuModule.showHelpModal(false);
-};
+});
 
 // Global Error Handlers
 window.onerror = (message, source, lineno, colno, error) => {
@@ -250,13 +249,5 @@ function init() {
 
 window.addEventListener('wheel', handleWheel, { passive: false });
 window.addEventListener('keydown', handleKeydown);
-
-// Legacy export functions for backward compatibility in global scope
-(window as any).save = saveModule.save;
-(window as any).toggleAutoSave = saveModule.toggleAutoSave;
-(window as any).zoomChange = zoomModule.zoomChange;
-(window as any).resetZoom = zoomModule.resetZoom;
-(window as any).setDirtyState = saveModule.setDirtyState;
-(window as any).getCleanHTML = saveModule.getCleanHTML;
 
 init();

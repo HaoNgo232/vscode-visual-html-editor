@@ -18,7 +18,8 @@ High-density, token-efficient status summary for developers and AI agents.
 | **v0.0.1 Biome Tooling**        | ✅ Done | High-speed Biome linter & formatter setup (`bun run lint`, `bun run format`).            |
 | **v0.0.1 Surgical Save**        | ✅ Done | Granular offset-based surgical patch protocol (`parseAndTagHtml`, `applySurgicalPatches`). |
 | **v0.0.1 Toolbar Redesign**      | ✅ Done | Single-line toolbar, VS Code Codicons, theme variables, CommandRegistry, Viewport toggle. |
-| **v0.0.1 Test Coverage**        | ✅ Done | 28/28 regression & unit tests passing (`bun test`).                                      |
+| **v0.0.1 Ponytail Audit Cleanup**| ✅ Done | Cleaned over-engineering, dead code & window bindings (~150 net lines removed, 1 devDep removed). |
+| **v0.0.1 Test Coverage**        | ✅ Done | 26/26 regression & unit tests passing (`bun test`).                                      |
 
 ---
 
