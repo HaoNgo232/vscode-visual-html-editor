@@ -23,7 +23,7 @@ git clone https://github.com/HaoNgo232/vscode-visual-html-editor.git
 cd vscode-visual-html-editor
 bun install
 bun run package
-code --install-extension visual-html-editor-0.0.1.vsix --force
+code --install-extension vscode-visual-html-editor-0.0.1.vsix --force
 ```
 
 ---
