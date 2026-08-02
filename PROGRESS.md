@@ -35,6 +35,10 @@ High-density, token-efficient status summary for developers and AI agents.
 | **v0.0.2 FileWatcher Module**     | ✅ Done | Replaced regex with `parse5` AST parser (`src/utils/fileWatcher.ts`) to traverse all AST nodes/attrs & directory tree hierarchy with zero blind spots. |
 | **v0.0.2 Test Coverage**          | ✅ Done | 57/57 regression & unit tests passing (`bun test`).                                                                    |
 | **v0.0.3 Package Release**        | ✅ Done | Version bump to 0.0.3, full test suite pass & `.vsix` package generation.                                             |
+| **v0.0.3 Unsaved Refresh Guard**  | ✅ Done | Added `canRefresh: () => !isDirty` to `SourceFileWatcher` preventing external refreshes from wiping unsaved edits.       |
+| **v0.0.3 Fetch Polyfill Cleanup** | ✅ Done | Tagged injected fetch polyfill with `data-vhe-injected="fetch-polyfill"` and cleanup in `removeInjectedRuntimeNodes`.   |
+| **v0.0.3 Save Race Condition Guard**| ✅ Done| Filtered self-save file watcher echo events to preserve native `execCommand('undo')` history after Save.                |
+| **v0.0.3 Test Coverage**          | ✅ Done | 63/63 regression & unit tests passing (`bun test`).                                                                    |
 
 ---
 

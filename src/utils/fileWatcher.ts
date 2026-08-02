@@ -23,6 +23,8 @@ export interface FileWatcherOptions {
   onRefresh: (changedUri?: UriLike) => void;
   /** Function returning true if save operation is in progress (prevents echo/loop) */
   isSaving?: () => boolean;
+  /** Function returning true if refresh is allowed (e.g. !isDirty) */
+  canRefresh?: () => boolean;
   /** Debounce delay in milliseconds (default: 300ms) */
   debounceMs?: number;
   /** Enable watching workspace-wide source files (default: true) */
@@ -247,6 +249,9 @@ export class SourceFileWatcher implements DisposableLike {
       if (this.options.isSaving?.()) {
         return;
       }
+      if (this.options.canRefresh?.() === false) {
+        return;
+      }
       this.options.onRefresh(uri);
     }, delay);
 
@@ -325,6 +330,9 @@ export class SourceFileWatcher implements DisposableLike {
 
   /** Manually trigger a debounced refresh */
   public triggerRefresh(uri?: UriLike): void {
+    if (this.options.isSaving?.()) {
+      return;
+    }
     this.debouncedRefresh(uri);
   }
 

@@ -183,5 +183,13 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
       expect(result).toContain('fetchLocalFileResponse');
       expect(result).toContain('customFetch');
     });
+
+    it('should mark and remove the injected fetch polyfill before fallback serialization', () => {
+      const result = getWebviewContent('<div>Content</div>');
+
+      expect(result).toContain('data-vhe-injected');
+      expect(result).toContain('fetch-polyfill');
+      expect(result).toContain('removeInjectedRuntimeNodes');
+    });
   });
 });

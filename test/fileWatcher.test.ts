@@ -154,6 +154,76 @@ describe('SourceFileWatcher Unit Test Suite (Bun)', () => {
     watcher.dispose();
   });
 
+  it('should ignore refresh triggers fired during save and prevent race condition refresh', async () => {
+    let refreshCalls = 0;
+    let isSaving = false;
+
+    const watcher = new SourceFileWatcher({
+      debounceMs: 50,
+      isSaving: () => isSaving,
+      onRefresh: () => {
+        refreshCalls++;
+      }
+    });
+
+    // Simulate save operation starting
+    isSaving = true;
+    // File change event triggered by workspace edit / file write during save
+    watcher.triggerRefresh();
+    // Save operation finishes, isSaving returns to false and pending cancels
+    watcher.cancelPending();
+    isSaving = false;
+
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    expect(refreshCalls).toBe(0);
+
+    watcher.dispose();
+  });
+
+  it('should block refresh while canRefresh returns false and allow later events', async () => {
+    let refreshCalls = 0;
+    let refreshAllowed = false;
+
+    const watcher = new SourceFileWatcher({
+      debounceMs: 30,
+      canRefresh: () => refreshAllowed,
+      onRefresh: () => {
+        refreshCalls++;
+      }
+    });
+
+    watcher.triggerRefresh();
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(refreshCalls).toBe(0);
+
+    refreshAllowed = true;
+    watcher.triggerRefresh();
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(refreshCalls).toBe(1);
+
+    watcher.dispose();
+  });
+
+  it('should preserve existing refresh behavior when canRefresh is omitted', async () => {
+    let refreshCalls = 0;
+
+    const watcher = new SourceFileWatcher({
+      debounceMs: 30,
+      onRefresh: () => {
+        refreshCalls++;
+      }
+    });
+
+    watcher.triggerRefresh();
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(refreshCalls).toBe(1);
+
+    watcher.dispose();
+  });
+
   it('should cancel pending execution on cancelPending or dispose', async () => {
     let refreshCalls = 0;
 

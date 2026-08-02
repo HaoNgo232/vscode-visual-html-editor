@@ -257,6 +257,7 @@ function prepareDocumentHtml(htmlString: string, base: string | null): string {
     if (doc.head && !doc.querySelector('#vhe-fetch-polyfill')) {
       const scriptElem = doc.createElement('script');
       scriptElem.id = 'vhe-fetch-polyfill';
+      scriptElem.setAttribute('data-vhe-injected', 'fetch-polyfill');
       scriptElem.textContent = POLYFILL_JS;
       doc.head.insertBefore(scriptElem, doc.head.firstChild);
     }

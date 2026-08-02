@@ -128,10 +128,20 @@ export function activate(context: vscode.ExtensionContext): void {
         htmlContent: originalSourceHtml,
         globPattern: '**/*.{html,css,js}',
         isSaving: () => isSaving,
-        onRefresh: () => {
+        canRefresh: () => !isDirty,
+        onRefresh: (changedUri?: any) => {
           if (!document) return;
           try {
-            originalSourceHtml = document.getText();
+            const newSourceHtml = document.getText();
+            const isTargetDoc =
+              !changedUri?.fsPath ||
+              changedUri.fsPath.toLowerCase() === document.uri.fsPath.toLowerCase();
+
+            if (isTargetDoc && newSourceHtml === originalSourceHtml) {
+              return;
+            }
+
+            originalSourceHtml = newSourceHtml;
             sourceWatcher.updateHtmlContent(originalSourceHtml);
             const reParsed = parseAndTagHtml(originalSourceHtml);
             currentOffsetMap = reParsed.offsetMap;
@@ -378,6 +388,7 @@ export function activate(context: vscode.ExtensionContext): void {
                 error: rawErrorPayload
               });
             } finally {
+              sourceWatcher.cancelPending();
               isSaving = false;
             }
           }

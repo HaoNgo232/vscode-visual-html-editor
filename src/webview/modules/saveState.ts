@@ -2,6 +2,14 @@ import { debounce } from '../../utils/debounceUtils';
 import { commandRegistry } from './commandRegistry';
 import { getState, type SaveStatus, updateState } from './state';
 
+export function removeInjectedRuntimeNodes(root: ParentNode): void {
+  const injectedNodes = root.querySelectorAll('[data-vhe-injected="fetch-polyfill"]');
+
+  for (let i = 0; i < injectedNodes.length; i++) {
+    injectedNodes[i].remove();
+  }
+}
+
 export function initSaveModule(
   vscode: any,
   iframe: HTMLIFrameElement,
@@ -132,6 +140,8 @@ export function initSaveModule(
     const cloneDoc = doc.documentElement.cloneNode(true) as HTMLElement;
     const injectedStyle = cloneDoc.querySelector('#vhe-style-injection');
     if (injectedStyle) injectedStyle.remove();
+
+    removeInjectedRuntimeNodes(cloneDoc);
 
     sanitizeNode(cloneDoc);
 
