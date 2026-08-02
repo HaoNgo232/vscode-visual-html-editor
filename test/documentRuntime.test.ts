@@ -15,7 +15,7 @@ describe('Document Runtime Module Test Suite (Bun)', () => {
         attributes = new Map<string, string>();
         children: MockNode[] = [];
         parentElement: MockNode | null = null;
-        listeners: Record<string, Function[]> = {};
+        listeners: Record<string, ((...args: any[]) => any)[]> = {};
 
         constructor(tagName = 'div') {
           this.tagName = tagName;
@@ -84,7 +84,7 @@ describe('Document Runtime Module Test Suite (Bun)', () => {
           this.children.push(node);
         }
 
-        addEventListener(type: string, fn: Function) {
+        addEventListener(type: string, fn: (...args: any[]) => any) {
           this.listeners[type] = this.listeners[type] || [];
           this.listeners[type].push(fn);
         }
