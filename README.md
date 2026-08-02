@@ -70,7 +70,7 @@ cd vscode-visual-html-editor
 bun install
 bun run package
 
-code --install-extension visual-html-live-editor-0.0.3.vsix --force
+code --install-extension visual-html-live-editor-0.0.4.vsix --force
 ```
 
 Requirements:
