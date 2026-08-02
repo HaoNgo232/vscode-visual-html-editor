@@ -10,7 +10,7 @@ import templateHTML from './template.html' with { type: 'text' };
 export function getWebviewContent(
   htmlContent: string,
   baseUri: string | null = null,
-  autoSaveEnabled: boolean = true
+  autoSaveEnabled: boolean = false
 ): string {
   // Safely escape HTML/script tags so embedded HTML won't break the webview script tag
   const safeContent = JSON.stringify(htmlContent)

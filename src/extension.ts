@@ -130,7 +130,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
       const autoSaveEnabled = context.globalState.get<boolean>(
         'visualHtmlEditor.autoSaveEnabled',
-        true
+        false
       );
       panel.webview.html = getWebviewContent(taggedHtml, baseUri, autoSaveEnabled);
 

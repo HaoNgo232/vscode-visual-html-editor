@@ -47,7 +47,7 @@ const saveModule = initSaveModule(
   autoSaveToggle,
   baseUri,
   dirtyRuntimeIds,
-  typeof initialAutoSaveEnabled === 'boolean' ? initialAutoSaveEnabled : true
+  typeof initialAutoSaveEnabled === 'boolean' ? initialAutoSaveEnabled : false
 );
 initMenuModule(moreMenu, helpModal, vscode, saveModule.getCleanHTML);
 

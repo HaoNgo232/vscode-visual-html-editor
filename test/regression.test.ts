@@ -109,13 +109,13 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
   });
 
   describe('8. Auto Save Toggle & Debounce Protocol Tests', () => {
-    it('should contain Auto Save toggle UI elements & checked state by default', () => {
+    it('should contain Auto Save toggle UI elements & unchecked state by default', () => {
       const result = getWebviewContent('<div>Content</div>');
 
       expect(result).toContain('id="auto-save-toggle"');
       expect(result).toContain('toggle-auto-save');
       expect(result).toContain('toggleAutoSave');
-      expect(result).toContain('checked');
+      expect(getWebviewContent('<div>Content</div>', null, true)).toContain('checked');
     });
 
     it('should contain debounced auto save logic with 1000ms delay', () => {

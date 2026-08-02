@@ -20,7 +20,7 @@ export function initSaveModule(
   autoSaveToggle: HTMLInputElement,
   baseUri: string | null,
   dirtyRuntimeIds: Set<string>,
-  initialAutoSaveEnabled: boolean = true
+  initialAutoSaveEnabled: boolean = false
 ) {
   const DEBOUNCE_DELAY = 1000;
 
