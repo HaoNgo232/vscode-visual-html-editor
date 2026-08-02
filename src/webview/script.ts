@@ -1,8 +1,8 @@
 import { commandRegistry } from './modules/commandRegistry';
+import { renderDocumentIntoIframe } from './modules/documentRuntime';
 import { initHistoryModule } from './modules/history';
 import { initMenuModule } from './modules/menu';
 import { initModeModule } from './modules/mode';
-import { getPolyfillScriptString } from './modules/polyfill';
 import { initSaveModule } from './modules/saveState';
 import { getState } from './modules/state';
 import { initViewportModule } from './modules/viewport';
@@ -122,49 +122,6 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 
-function registerMutationTracker(doc: Document) {
-  const markTargetDirty = (target: Node | null) => {
-    if (!target) return;
-    let curr =
-      target.nodeType === 3
-        ? (target.parentElement as HTMLElement | null)
-        : (target as HTMLElement);
-    while (
-      curr &&
-      curr !== doc.body &&
-      curr !== doc.documentElement &&
-      !curr.getAttribute('data-runtime-id')
-    ) {
-      curr = curr.parentElement;
-    }
-    const runtimeId = curr?.getAttribute('data-runtime-id');
-    if (runtimeId) {
-      dirtyRuntimeIds.add(runtimeId);
-      if (!getState().isDirty) saveModule.setDirtyState(true);
-      if (getState().autoSaveEnabled) {
-        saveModule.debouncedSave();
-      }
-    } else {
-      if (!getState().isDirty) saveModule.setDirtyState(true);
-      if (getState().autoSaveEnabled) {
-        saveModule.debouncedSave();
-      }
-    }
-  };
-
-  doc.addEventListener('input', (e) => markTargetDirty(e.target as Node));
-  doc.addEventListener('beforeinput', (e) => markTargetDirty(e.target as Node));
-  doc.addEventListener('change', (e) => markTargetDirty(e.target as Node));
-  doc.addEventListener('paste', (e) => markTargetDirty((e.target as Node) || doc.activeElement));
-  doc.addEventListener('cut', (e) => markTargetDirty((e.target as Node) || doc.activeElement));
-  doc.addEventListener('drop', (e) => markTargetDirty((e.target as Node) || doc.activeElement));
-  doc.addEventListener('keyup', (e) => {
-    if (!e.ctrlKey && !e.metaKey && e.key !== 'Control' && e.key !== 'Shift') {
-      markTargetDirty((e.target as Node) || doc.activeElement);
-    }
-  });
-}
-
 // Error Boundary & Helpers
 (window as any).showError = (err: unknown) => {
   let rawText = '';
@@ -231,38 +188,6 @@ window.onbeforeunload = (e) => {
   }
 };
 
-const POLYFILL_JS = getPolyfillScriptString();
-
-function prepareDocumentHtml(htmlString: string, base: string | null): string {
-  try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlString, 'text/html');
-
-    if (base && base !== 'null' && base !== 'undefined' && !doc.querySelector('base')) {
-      const baseElem = doc.createElement('base');
-      baseElem.href = base;
-      if (doc.head) {
-        doc.head.insertBefore(baseElem, doc.head.firstChild);
-      }
-    }
-
-    if (doc.head && !doc.querySelector('#vhe-fetch-polyfill')) {
-      const scriptElem = doc.createElement('script');
-      scriptElem.id = 'vhe-fetch-polyfill';
-      scriptElem.setAttribute('data-vhe-injected', 'fetch-polyfill');
-      scriptElem.textContent = POLYFILL_JS;
-      doc.head.insertBefore(scriptElem, doc.head.firstChild);
-    }
-
-    const doctypeMatch = htmlString.match(/^\s*(<!DOCTYPE[^>]*>)/i);
-    const doctypePrefix = doctypeMatch ? `${doctypeMatch[1]}\n` : '';
-    return doctypePrefix + doc.documentElement.outerHTML;
-  } catch (e) {
-    console.warn('[Visual HTML Editor] DOMParser notice:', e);
-    return htmlString;
-  }
-}
-
 window.addEventListener('message', (event) => {
   const data = event.data;
   if (!data) return;
@@ -276,93 +201,18 @@ window.addEventListener('message', (event) => {
   }
 });
 
-function resolveNestedIframes(doc: Document) {
-  const iframes = doc.querySelectorAll('iframe[src]');
-  iframes.forEach(async (ifrm) => {
-    const iframeElem = ifrm as HTMLIFrameElement;
-    const src = iframeElem.getAttribute('src');
-    if (
-      src &&
-      !src.startsWith('http://') &&
-      !src.startsWith('https://') &&
-      !src.startsWith('data:')
-    ) {
-      try {
-        const targetUrl = new URL(
-          src,
-          doc.baseURI || (baseUri && baseUri !== 'null' ? baseUri : window.location.href)
-        ).href;
-        const res = await fetch(targetUrl);
-        if (res.ok) {
-          const text = await res.text();
-          iframeElem.removeAttribute('src');
-          if (!iframeElem.hasAttribute('sandbox')) {
-            iframeElem.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms');
-          }
-          iframeElem.srcdoc = text;
-        }
-      } catch (e) {
-        console.warn('[Visual HTML Editor] Nested iframe fetch notice:', src, e);
-      }
-    }
+function renderDocument(doc: Document, htmlString: string) {
+  renderDocumentIntoIframe({
+    doc,
+    htmlString,
+    baseUri,
+    dirtyRuntimeIds,
+    saveModule,
+    zoomModule,
+    iframe,
+    onWheel: handleWheel,
+    onKeydown: handleKeydown
   });
-}
-
-function renderDocumentIntoIframe(doc: Document, htmlString: string) {
-  const preparedHtml = prepareDocumentHtml(htmlString, baseUri);
-  doc.open();
-  doc.write(preparedHtml);
-  doc.close();
-
-  resolveNestedIframes(doc);
-
-  if (baseUri && doc.head && !doc.querySelector('base')) {
-    const baseElem = doc.createElement('base');
-    baseElem.href = baseUri;
-    doc.head.insertBefore(baseElem, doc.head.firstChild);
-  }
-
-  if (doc.head && !doc.querySelector('#vhe-style-injection')) {
-    const styleElem = doc.createElement('style');
-    styleElem.id = 'vhe-style-injection';
-    styleElem.textContent = `
-        .vhe-editing-active {
-          outline: 1.5px solid rgba(59, 130, 246, 0.45) !important;
-          outline-offset: 2px !important;
-          border-radius: 2px !important;
-          background-color: rgba(59, 130, 246, 0.03) !important;
-        }
-      `;
-    doc.head.appendChild(styleElem);
-  }
-
-  doc.addEventListener('click', (e) => {
-    if (getState().mode !== 'edit') return;
-    const target = (e.target as HTMLElement).closest('*') as HTMLElement | null;
-    const activeElems = doc.querySelectorAll('.vhe-editing-active');
-    for (let i = 0; i < activeElems.length; i++) {
-      activeElems[i].classList.remove('vhe-editing-active');
-      if (activeElems[i].classList.length === 0 || !activeElems[i].getAttribute('class')) {
-        activeElems[i].removeAttribute('class');
-      }
-    }
-    if (target && target !== doc.body && target !== doc.documentElement) {
-      target.classList.add('vhe-editing-active');
-    }
-  });
-
-  if (iframe?.contentWindow) {
-    iframe.contentWindow.onerror = (msg, url, line) => {
-      console.warn('[Iframe Inner Notice]', msg, url, line);
-      return false;
-    };
-  }
-
-  doc.designMode = 'on';
-  registerMutationTracker(doc);
-  doc.addEventListener('wheel', handleWheel, { passive: false });
-  doc.addEventListener('keydown', handleKeydown);
-  zoomModule.applyZoom();
 }
 
 function init() {
@@ -371,7 +221,7 @@ function init() {
       iframe.contentDocument || (iframe.contentWindow ? iframe.contentWindow.document : null);
     if (!doc) return;
 
-    renderDocumentIntoIframe(doc, rawHTML);
+    renderDocument(doc, rawHTML);
   } catch (err: any) {
     (window as any).showError(
       `Failed to parse & render HTML document: ${err.message}\n\nStack:\n${err.stack}`
@@ -388,7 +238,7 @@ function init() {
     const scrollTop = doc.documentElement.scrollTop || doc.body.scrollTop;
     const scrollLeft = doc.documentElement.scrollLeft || doc.body.scrollLeft;
 
-    renderDocumentIntoIframe(doc, newHtml);
+    renderDocument(doc, newHtml);
 
     doc.documentElement.scrollTop = doc.body.scrollTop = scrollTop;
     doc.documentElement.scrollLeft = doc.body.scrollLeft = scrollLeft;
