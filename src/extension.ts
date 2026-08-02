@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 import * as vscode from 'vscode';
 import { SourceFileWatcher } from './utils/fileWatcher';
 import { applySurgicalPatches, parseAndTagHtml } from './utils/htmlSurgicalMapper';
+import { isPathContained } from './utils/securityUtils';
 import { getWebviewContent } from './webview/editorContent';
 
 const execFileAsync = promisify(execFile);
@@ -187,7 +188,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
               // Security Path Traversal Guard: Restrict file reading to allowed workspace roots
               const isAllowed = localResourceRoots.some((root) =>
-                targetUri.fsPath.startsWith(root.fsPath)
+                isPathContained(root.fsPath, targetUri.fsPath)
               );
               if (!isAllowed) {
                 throw new Error('Security Error: Access denied to path outside workspace.');

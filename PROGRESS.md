@@ -38,7 +38,8 @@ High-density, token-efficient status summary for developers and AI agents.
 | **v0.0.3 Unsaved Refresh Guard**  | ✅ Done | Added `canRefresh: () => !isDirty` to `SourceFileWatcher` preventing external refreshes from wiping unsaved edits.       |
 | **v0.0.3 Fetch Polyfill Cleanup** | ✅ Done | Tagged injected fetch polyfill with `data-vhe-injected="fetch-polyfill"` and cleanup in `removeInjectedRuntimeNodes`.   |
 | **v0.0.3 Save Race Condition Guard**| ✅ Done| Filtered self-save file watcher echo events to preserve native `execCommand('undo')` history after Save.                |
-| **v0.0.3 Test Coverage**          | ✅ Done | 63/63 regression & unit tests passing (`bun test`).                                                                    |
+| **v0.0.3 Path Containment Guard** | ✅ Done | Added `isPathContained()` in `src/utils/securityUtils.ts` preventing path traversal & prefix bypass attacks.           |
+| **v0.0.3 Test Coverage**          | ✅ Done | 71/71 regression & unit tests passing (`bun test`).                                                                    |
 
 ---
 

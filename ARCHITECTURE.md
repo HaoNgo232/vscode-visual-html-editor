@@ -115,7 +115,7 @@ vscode-visual-html-editor/
   - Handles IPC messages (`onDidReceiveMessage`) from Webview.
   - Applies surgical patches via `applySurgicalPatches()` and writes clean changes directly to disk using `vscode.workspace.applyEdit()`.
   - Intercepts panel disposal (`panel.onDidDispose`) with unsaved changes protection prompt.
-  - Enforces **Security Path Traversal Guard**: validates requested relative local resource paths against `localResourceRoots` (document folder + workspace roots) via `targetUri.fsPath.startsWith(root.fsPath)` before serving content through `vscode.workspace.fs.readFile()`.
+  - Enforces **Security Path Traversal Guard**: validates requested relative local resource paths against `localResourceRoots` (document folder + workspace roots) via `isPathContained(root.fsPath, targetUri.fsPath)` before serving content through `vscode.workspace.fs.readFile()`.
 
 ### 3.2 Webview Runtime & Modules (`src/webview/`)
 - **Template & Assets (`editorContent.ts`, `template.html`, `style.css`, `codicon.css`)**:

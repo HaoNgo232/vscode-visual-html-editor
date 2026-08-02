@@ -1,6 +1,7 @@
 import * as path from 'node:path';
 import * as parse5 from 'parse5';
 import { type DebouncedFunction, debounce } from './debounceUtils';
+import { isPathContained } from './securityUtils';
 
 export interface UriLike {
   fsPath?: string;
@@ -197,16 +198,8 @@ export function isUriRelated(
   const changedDir = path.dirname(changedFsPath);
 
   // 2. Check if changedUri resides inside targetUri's directory tree or subdirectories
-  if (targetDir) {
-    const normTargetDir = targetDir.endsWith(path.sep) ? targetDir : targetDir + path.sep;
-    const normTargetDirAlt = targetDir.endsWith('/') ? targetDir : targetDir + '/';
-    if (
-      changedDir === targetDir ||
-      changedFsPath.startsWith(normTargetDir) ||
-      changedFsPath.startsWith(normTargetDirAlt)
-    ) {
-      return true;
-    }
+  if (targetDir && isPathContained(targetDir, changedFsPath)) {
+    return true;
   }
 
   // 3. Match resolved absolute paths of AST-extracted dependencies
