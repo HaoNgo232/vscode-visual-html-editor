@@ -158,17 +158,18 @@ export function extractRelatedFilePathsAST(htmlContent: string): string[] {
  */
 export const extractRelatedFilePaths = extractRelatedFilePathsAST;
 
-const isWindowsPlatform = typeof process !== 'undefined' && process.platform === 'win32';
+import { normalizePath } from './pathUtils';
 
 /**
  * Deterministically resolve a relative path against a base directory using path.resolve.
  */
 export function resolvePathDeterministic(baseDir: string, relPath: string): string {
   const normRel = relPath.replace(/\\/g, '/');
+  const normBase = baseDir.replace(/\\/g, '/');
   const resolved = path.isAbsolute(normRel)
     ? path.normalize(normRel)
-    : path.resolve(baseDir, normRel);
-  return isWindowsPlatform ? resolved.toLowerCase() : resolved;
+    : path.resolve(normBase, normRel);
+  return normalizePath(resolved, { stripDrive: true });
 }
 
 /**
@@ -182,18 +183,11 @@ export function isUriRelated(
 ): boolean {
   if (!targetUri) return true;
 
-  const rawTargetFs = targetUri.fsPath ? path.normalize(targetUri.fsPath) : undefined;
-  const rawChangedFs = changedUri.fsPath ? path.normalize(changedUri.fsPath) : undefined;
-
-  const targetFsPath = rawTargetFs
-    ? isWindowsPlatform
-      ? rawTargetFs.toLowerCase()
-      : rawTargetFs
+  const targetFsPath = targetUri.fsPath
+    ? normalizePath(targetUri.fsPath, { stripDrive: true })
     : undefined;
-  const changedFsPath = rawChangedFs
-    ? isWindowsPlatform
-      ? rawChangedFs.toLowerCase()
-      : rawChangedFs
+  const changedFsPath = changedUri.fsPath
+    ? normalizePath(changedUri.fsPath, { stripDrive: true })
     : undefined;
 
   if (!changedFsPath) return false;
@@ -204,7 +198,6 @@ export function isUriRelated(
   }
 
   const targetDir = targetFsPath ? path.dirname(targetFsPath) : undefined;
-  const changedDir = path.dirname(changedFsPath);
 
   // 2. Check if changedUri resides inside targetUri's directory tree or subdirectories
   if (targetDir && isPathContained(targetDir, changedFsPath)) {
@@ -218,8 +211,7 @@ export function isUriRelated(
       if (changedFsPath === resolvedAbs) {
         return true;
       }
-      const rawCleanRel = relPath.replace(/^(\.\/|\/)+/, '').replace(/\\/g, '/');
-      const cleanRel = isWindowsPlatform ? rawCleanRel.toLowerCase() : rawCleanRel;
+      const cleanRel = normalizePath(relPath.replace(/^(\.\/|\/)+/, ''));
       if (cleanRel && (changedFsPath.endsWith(cleanRel) || changedFsPath.includes(cleanRel))) {
         return true;
       }

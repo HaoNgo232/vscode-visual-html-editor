@@ -1,4 +1,5 @@
-import * as path from 'path';
+import * as path from 'node:path';
+import { normalizePath } from './pathUtils';
 
 /**
  * Safely verifies if a target path is contained within a root/parent directory.
@@ -13,8 +14,8 @@ export function isPathContained(parentPath: string, childPath: string): boolean 
   if (!parentPath || !childPath) {
     return false;
   }
-  const normParent = path.resolve(parentPath);
-  const normChild = path.resolve(childPath);
+  const normParent = normalizePath(path.resolve(parentPath));
+  const normChild = normalizePath(path.resolve(childPath));
 
   const relative = path.relative(normParent, normChild);
   return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));

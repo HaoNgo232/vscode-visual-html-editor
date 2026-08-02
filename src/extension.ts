@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 import * as vscode from 'vscode';
 import { SourceFileWatcher } from './utils/fileWatcher';
 import { applySurgicalPatches, parseAndTagHtml } from './utils/htmlSurgicalMapper';
+import { normalizePath } from './utils/pathUtils';
 import { isPathContained } from './utils/securityUtils';
 import { getWebviewContent } from './webview/editorContent';
 
@@ -134,12 +135,9 @@ export function activate(context: vscode.ExtensionContext): void {
           if (!document) return;
           try {
             const newSourceHtml = document.getText();
-            const isWin = process.platform === 'win32';
             const isTargetDoc =
               !changedUri?.fsPath ||
-              (isWin
-                ? changedUri.fsPath.toLowerCase() === document.uri.fsPath.toLowerCase()
-                : changedUri.fsPath === document.uri.fsPath);
+              normalizePath(changedUri.fsPath) === normalizePath(document.uri.fsPath);
 
             if (isTargetDoc && newSourceHtml === originalSourceHtml) {
               return;
@@ -186,7 +184,10 @@ export function activate(context: vscode.ExtensionContext): void {
             (message as any).relativePath
           ) {
             try {
-              const relPath = (message as any).relativePath.split('?')[0].split('#')[0];
+              const relPath = (message as any).relativePath
+                .split('?')[0]
+                .split('#')[0]
+                .replace(/\\/g, '/');
               const targetUri = vscode.Uri.joinPath(fileFolder, relPath);
 
               // Security Path Traversal Guard: Restrict file reading to allowed workspace roots

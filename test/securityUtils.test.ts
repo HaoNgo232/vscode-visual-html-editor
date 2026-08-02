@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import * as path from 'path';
+import * as path from 'node:path';
 import { isPathContained } from '../src/utils/securityUtils';
 
 describe('Security Utils - Path Containment Guard Test Suite', () => {
