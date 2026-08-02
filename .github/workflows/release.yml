@@ -28,7 +28,7 @@ jobs:
         run: bun run lint
 
       - name: Run Test Suite
-        run: bun test
+        run: bun run test
 
       - name: Package Extension (.vsix)
         run: bun run package
