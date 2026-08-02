@@ -304,6 +304,9 @@ function resolveNestedIframes(doc: Document) {
         if (res.ok) {
           const text = await res.text();
           iframeElem.removeAttribute('src');
+          if (!iframeElem.hasAttribute('sandbox')) {
+            iframeElem.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms');
+          }
           iframeElem.srcdoc = text;
         }
       } catch (e) {

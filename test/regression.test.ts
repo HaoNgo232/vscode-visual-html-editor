@@ -192,4 +192,22 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
       expect(result).toContain('removeInjectedRuntimeNodes');
     });
   });
+
+  describe('14. Webview Iframe Sandboxing & Security Boundaries Tests', () => {
+    it('should contain sandbox attribute on editor-frame element in generated webview HTML', () => {
+      const result = getWebviewContent('<div>Content</div>');
+
+      expect(result).toContain('id="editor-frame"');
+      expect(result).toContain(
+        'sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"'
+      );
+    });
+
+    it('should set sandbox attribute when resolving nested iframes in generated webview JS', () => {
+      const result = getWebviewContent('<div>Content</div>');
+
+      expect(result).toContain('setAttribute("sandbox"');
+      expect(result).toContain('allow-scripts allow-same-origin allow-forms');
+    });
+  });
 });
