@@ -1,62 +1,107 @@
-# Visual HTML Editor for VS Code
+# Visual HTML Live Editor for VS Code
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![VS Code Extension](https://img.shields.io/badge/VS%20Code-v1.75%2B-blue)](https://marketplace.visualstudio.com/)
+[![VS Code](https://img.shields.io/badge/VS%20Code-1.75%2B-blue)](https://code.visualstudio.com/)
 
-Visually edit rendered static HTML files directly in VS Code with real-time preview, device frame switching, auto-save, and clean formatting-preserving save.
+Edit rendered static HTML directly inside VS Code without searching through deeply nested source code.
 
----
-
-## 🎯 Why Use This Extension?
-
-1. **Visual Editing**: Edit rendered text directly instead of hunting through messy, hard-to-read inline HTML code.
-2. **Save AI Tokens & Time**: Quickly tweak minor text/typos in **AI-generated CVs and documents** without wasting tokens on AI re-prompts.
+This extension is especially useful for AI-generated CVs, landing pages, reports, portfolios, and other HTML documents where the layout is already finished but the content still needs small corrections.
 
 ---
 
-## 📦 Installation & Build
+## Why Use It?
 
-Run the following commands in your terminal to clone, package, and install the extension into VS Code:
+AI can generate complete HTML pages quickly, but using AI again just to fix a typo, name, title, or number is often unnecessary—and may accidentally change the layout.
+
+Visual HTML Live Editor lets you:
+
+- Click and edit visible text directly
+- Save changes back to the original HTML file
+- Avoid regenerating an entire document for small corrections
+- Preview the page at Desktop, Tablet, and Mobile widths
+- Export the finished document to PDF
+
+---
+
+## Who Is It For?
+
+- Developers working with AI-generated HTML
+- People creating CVs, portfolios, or printable documents
+- Designers and content editors making quick text changes
+- Freelancers maintaining static client pages
+- Anyone who wants to edit HTML content visually inside VS Code
+
+It works best with static, content-focused HTML. It is not intended to replace a complete website builder or code editor.
+
+---
+
+## Features
+
+- **Visual Editing**: Click visible text and edit it directly in the rendered page.
+- **Clean Saving**: Updates edited content while preserving surrounding source formatting when possible.
+- **Auto Save**: Automatically saves changes after you stop typing.
+- **Responsive Preview**: Switch between Desktop, Tablet, and Mobile views.
+- **Zoom Controls**: Use the toolbar or `Ctrl/Cmd + Scroll`.
+- **Undo and Redo**: Use familiar editing shortcuts.
+- **Reload from Disk**: Re-sync the preview with the source file.
+- **PDF Export**: Export the rendered document through a Chromium-based browser.
+- **Local Resources**: Load relative CSS, JavaScript, images, and local HTML references.
+
+---
+
+## Quick Start
+
+1. Open an `.html` file in VS Code.
+2. Right-click the file or editor tab.
+3. Select **Visual HTML Editor: Open Visual Editor**.
+4. Click the text you want to change.
+5. Press `Ctrl/Cmd + S` to save.
+
+For important files, use Git and review the changes before committing.
+
+---
+
+## Installation
 
 ```bash
 git clone https://github.com/HaoNgo232/vscode-visual-html-editor.git
 cd vscode-visual-html-editor
+
 bun install
 bun run package
+
 code --install-extension visual-html-live-editor-0.0.3.vsix --force
 ```
 
----
+Requirements:
 
-## ✨ Features
-
-- **Visual Text Editing**: Click any text in the preview to edit directly, just like a word processor.
-- **Clean File Saving**: Keeps 100% of your original HTML structure, comments, and formatting intact when saving.
-- **Auto-Save**: Automatically saves your edits in the background as you type.
-- **Device Preview**: Switch between Desktop, Tablet, and Mobile views to test responsive layouts.
-- **Instant PDF Export**: Export your rendered HTML directly to a PDF document in one click.
-- **Multi-File HTML Support**: Open HTML files that reference other local HTML files (e.g., iframe-based presentations). Local CSS, JS, and images are loaded automatically.
-- **Security**: Path traversal protection ensures only files within your workspace can be accessed.
+- Bun
+- Node.js with `npx`
 
 ---
 
-## 🚀 Quick Start
+## Shortcuts
 
-1. Open any `.html` file.
-2. Right-click in the file/editor tab and select **`Visual HTML Editor: Open Visual Editor`**.
-3. Click text to edit.
-4. Press `Ctrl + S` to save.
-
----
-
-## ⌨️ Shortcuts
-
-- `Ctrl + S`: Save changes
-- `Ctrl + Z` / `Ctrl + Y`: Undo / Redo
-- `Ctrl + Scroll` / `Ctrl + +/-`: Zoom canvas
+| Shortcut            | Action         |
+| ------------------- | -------------- |
+| `Ctrl/Cmd + S`      | Save           |
+| `Ctrl/Cmd + Z`      | Undo           |
+| `Ctrl/Cmd + Y`      | Redo           |
+| `Ctrl/Cmd + Scroll` | Zoom           |
+| `Ctrl/Cmd + +/-`    | Zoom in or out |
 
 ---
 
-## 📄 License
+## Current Limitations
 
-MIT
+- Best suited for static HTML.
+- Complex JavaScript applications may not behave predictably.
+- Structural edits may require the document to be re-serialized.
+- Nested local HTML files can be previewed, but full multi-file save-back is not guaranteed.
+- This is a content editor, not a drag-and-drop website builder.
+
+---
+
+## License
+
+[MIT](LICENSE)
