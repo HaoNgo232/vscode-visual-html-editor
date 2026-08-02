@@ -2,9 +2,9 @@ name: CI Workflow
 
 on:
   push:
-    branches: [master]
+    branches: [ master, main ]
   pull_request:
-    branches: [master]
+    branches: [ master, main ]
 
 jobs:
   test:
@@ -14,6 +14,10 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
+      - name: Disable git autocrlf on Windows
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+
       - name: Checkout Repository
         uses: actions/checkout@v4
 
