@@ -7,6 +7,8 @@ Edit rendered static HTML directly inside VS Code without searching through deep
 
 This extension is especially useful for AI-generated CVs, landing pages, reports, portfolios, and other HTML documents where the layout is already finished but the content still needs small corrections.
 
+![Visual HTML Live Editor Demo](./docs/demo.gif)
+
 ---
 
 ## Why Use It?
