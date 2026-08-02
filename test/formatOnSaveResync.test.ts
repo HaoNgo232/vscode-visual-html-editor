@@ -35,9 +35,10 @@ describe('Format On Save & Post-Save Re-sync Test Suite (Bun)', () => {
     expect(edit2).toContain('Updated Title');
   });
 
-  it('should include saveCompleted protocol handler in generated webview JS', () => {
+  it('should include saveCompleted protocol handler that resyncs taggedHtml in generated webview JS', () => {
     const webviewContent = getWebviewContent('<div>Test</div>');
     expect(webviewContent).toContain('saveCompleted');
+    expect(webviewContent).toContain('updateIframeContent(message.taggedHtml)');
     expect(webviewContent).toContain('dirtyRuntimeIds.clear()');
   });
 });

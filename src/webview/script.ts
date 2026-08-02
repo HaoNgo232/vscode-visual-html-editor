@@ -308,29 +308,24 @@ function resolveNestedIframes(doc: Document) {
   });
 }
 
-function init() {
-  try {
-    const doc =
-      iframe.contentDocument || (iframe.contentWindow ? iframe.contentWindow.document : null);
-    if (!doc) return;
+function renderDocumentIntoIframe(doc: Document, htmlString: string) {
+  const preparedHtml = prepareDocumentHtml(htmlString, baseUri);
+  doc.open();
+  doc.write(preparedHtml);
+  doc.close();
 
-    const preparedHtml = prepareDocumentHtml(rawHTML, baseUri);
-    doc.open();
-    doc.write(preparedHtml);
-    doc.close();
+  resolveNestedIframes(doc);
 
-    resolveNestedIframes(doc);
+  if (baseUri && doc.head && !doc.querySelector('base')) {
+    const baseElem = doc.createElement('base');
+    baseElem.href = baseUri;
+    doc.head.insertBefore(baseElem, doc.head.firstChild);
+  }
 
-    if (baseUri && doc.head && !doc.querySelector('base')) {
-      const baseElem = doc.createElement('base');
-      baseElem.href = baseUri;
-      doc.head.insertBefore(baseElem, doc.head.firstChild);
-    }
-
-    if (doc.head && !doc.querySelector('#vhe-style-injection')) {
-      const styleElem = doc.createElement('style');
-      styleElem.id = 'vhe-style-injection';
-      styleElem.textContent = `
+  if (doc.head && !doc.querySelector('#vhe-style-injection')) {
+    const styleElem = doc.createElement('style');
+    styleElem.id = 'vhe-style-injection';
+    styleElem.textContent = `
         .vhe-editing-active {
           outline: 1.5px solid rgba(59, 130, 246, 0.45) !important;
           outline-offset: 2px !important;
@@ -338,42 +333,45 @@ function init() {
           background-color: rgba(59, 130, 246, 0.03) !important;
         }
       `;
-      doc.head.appendChild(styleElem);
+    doc.head.appendChild(styleElem);
+  }
+
+  doc.addEventListener('click', (e) => {
+    if (getState().mode !== 'edit') return;
+    const target = (e.target as HTMLElement).closest('*') as HTMLElement | null;
+    const activeElems = doc.querySelectorAll('.vhe-editing-active');
+    for (let i = 0; i < activeElems.length; i++) {
+      activeElems[i].classList.remove('vhe-editing-active');
+      if (activeElems[i].classList.length === 0 || !activeElems[i].getAttribute('class')) {
+        activeElems[i].removeAttribute('class');
+      }
     }
-
-    doc.addEventListener('click', (e) => {
-      if (getState().mode !== 'edit') return;
-      const target = (e.target as HTMLElement).closest('*') as HTMLElement | null;
-      const activeElems = doc.querySelectorAll('.vhe-editing-active');
-      for (let i = 0; i < activeElems.length; i++) {
-        activeElems[i].classList.remove('vhe-editing-active');
-        if (activeElems[i].classList.length === 0 || !activeElems[i].getAttribute('class')) {
-          activeElems[i].removeAttribute('class');
-        }
-      }
-      if (target && target !== doc.body && target !== doc.documentElement) {
-        target.classList.add('vhe-editing-active');
-      }
-    });
-
-    if (iframe?.contentWindow) {
-      iframe.contentWindow.onerror = (msg, url, line) => {
-        console.warn('[Iframe Inner Notice]', msg, url, line);
-        return false;
-      };
+    if (target && target !== doc.body && target !== doc.documentElement) {
+      target.classList.add('vhe-editing-active');
     }
+  });
 
-    setTimeout(() => {
-      try {
-        doc.designMode = 'on';
-        registerMutationTracker(doc);
-        doc.addEventListener('wheel', handleWheel, { passive: false });
-        doc.addEventListener('keydown', handleKeydown);
-        zoomModule.applyZoom();
-      } catch (e: any) {
-        (window as any).showError(`Design Mode Activation Error: ${e.message}`);
-      }
-    }, 100);
+  if (iframe?.contentWindow) {
+    iframe.contentWindow.onerror = (msg, url, line) => {
+      console.warn('[Iframe Inner Notice]', msg, url, line);
+      return false;
+    };
+  }
+
+  doc.designMode = 'on';
+  registerMutationTracker(doc);
+  doc.addEventListener('wheel', handleWheel, { passive: false });
+  doc.addEventListener('keydown', handleKeydown);
+  zoomModule.applyZoom();
+}
+
+function init() {
+  try {
+    const doc =
+      iframe.contentDocument || (iframe.contentWindow ? iframe.contentWindow.document : null);
+    if (!doc) return;
+
+    renderDocumentIntoIframe(doc, rawHTML);
   } catch (err: any) {
     (window as any).showError(
       `Failed to parse & render HTML document: ${err.message}\n\nStack:\n${err.stack}`
@@ -390,53 +388,10 @@ function init() {
     const scrollTop = doc.documentElement.scrollTop || doc.body.scrollTop;
     const scrollLeft = doc.documentElement.scrollLeft || doc.body.scrollLeft;
 
-    const preparedHtml = prepareDocumentHtml(newHtml, baseUri);
-    doc.open();
-    doc.write(preparedHtml);
-    doc.close();
-
-    resolveNestedIframes(doc);
-
-    if (baseUri && doc.head && !doc.querySelector('base')) {
-      const baseElem = doc.createElement('base');
-      baseElem.href = baseUri;
-      doc.head.insertBefore(baseElem, doc.head.firstChild);
-    }
-
-    if (doc.head && !doc.querySelector('#vhe-style-injection')) {
-      const styleElem = doc.createElement('style');
-      styleElem.id = 'vhe-style-injection';
-      styleElem.textContent = `
-        .vhe-editing-active {
-          outline: 1.5px solid rgba(59, 130, 246, 0.45) !important;
-          outline-offset: 2px !important;
-          border-radius: 2px !important;
-          background-color: rgba(59, 130, 246, 0.03) !important;
-        }
-      `;
-      doc.head.appendChild(styleElem);
-    }
-
-    doc.addEventListener('click', (e) => {
-      if (getState().mode !== 'edit') return;
-      const target = (e.target as HTMLElement).closest('*') as HTMLElement | null;
-      const activeElems = doc.querySelectorAll('.vhe-editing-active');
-      for (let i = 0; i < activeElems.length; i++) {
-        activeElems[i].classList.remove('vhe-editing-active');
-      }
-      if (target && target !== doc.body && target !== doc.documentElement) {
-        target.classList.add('vhe-editing-active');
-      }
-    });
-
-    doc.designMode = 'on';
-    registerMutationTracker(doc);
-    doc.addEventListener('wheel', handleWheel, { passive: false });
-    doc.addEventListener('keydown', handleKeydown);
+    renderDocumentIntoIframe(doc, newHtml);
 
     doc.documentElement.scrollTop = doc.body.scrollTop = scrollTop;
     doc.documentElement.scrollLeft = doc.body.scrollLeft = scrollLeft;
-    zoomModule.applyZoom();
   } catch (err: unknown) {
     console.warn('[Visual HTML Editor Iframe Update Notice]', err);
   }
