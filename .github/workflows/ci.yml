@@ -1,0 +1,38 @@
+name: CI Workflow
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    name: Build & Test (Bun)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun Environment
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run Biome Linter
+        run: bun run lint
+
+      - name: Build Extension Source
+        run: bun run build
+
+      - name: Run Unit Tests
+        run: bun test
+
+      - name: Verify Extension Packaging (.vsix)
+        run: bun run package
