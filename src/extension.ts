@@ -4,6 +4,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { promisify } from 'node:util';
 import * as vscode from 'vscode';
+import { SourceFileWatcher } from './utils/fileWatcher';
 import { applySurgicalPatches, parseAndTagHtml } from './utils/htmlSurgicalMapper';
 import { getWebviewContent } from './webview/editorContent';
 
@@ -121,22 +122,32 @@ export function activate(context: vscode.ExtensionContext): void {
       let lastUnsavedHTML: string | null = null;
       let isSaving = false;
 
-      // Sync originalSourceHtml and offsetMap when document is edited externally
-      const changeSubscription = vscode.workspace.onDidChangeTextDocument((e) => {
-        try {
-          if (!isSaving && document && e.document.uri.toString() === document.uri.toString()) {
+      // Setup SourceFileWatcher to monitor target file & linked dependencies (CSS, JS, assets)
+      const sourceWatcher = new SourceFileWatcher({
+        targetUri: document.uri,
+        htmlContent: originalSourceHtml,
+        globPattern: '**/*.{html,css,js}',
+        isSaving: () => isSaving,
+        onRefresh: () => {
+          if (!document) return;
+          try {
             originalSourceHtml = document.getText();
+            sourceWatcher.updateHtmlContent(originalSourceHtml);
             const reParsed = parseAndTagHtml(originalSourceHtml);
             currentOffsetMap = reParsed.offsetMap;
+            panel.webview.postMessage({
+              command: 'forceReload',
+              taggedHtml: reParsed.taggedHtml
+            });
+          } catch (err: unknown) {
+            console.error(
+              '[Visual HTML Editor SourceFileWatcher Refresh Error]',
+              formatRawError(err)
+            );
           }
-        } catch (err: unknown) {
-          console.error(
-            '[Visual HTML Editor onDidChangeTextDocument Raw Error]',
-            formatRawError(err)
-          );
         }
       });
-      context.subscriptions.push(changeSubscription);
+      context.subscriptions.push(sourceWatcher);
 
       const autoSaveEnabled = context.globalState.get<boolean>(
         'visualHtmlEditor.autoSaveEnabled',
@@ -377,6 +388,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
       // Tab Disposal Guard
       panel.onDidDispose(async () => {
+        sourceWatcher.dispose();
         if (isDirty && lastUnsavedHTML && document) {
           const choice = await vscode.window.showWarningMessage(
             `You closed Visual HTML Editor for "${fileName}" with unsaved changes. Would you like to save them now?`,

@@ -32,8 +32,8 @@ High-density, token-efficient status summary for developers and AI agents.
 | **v0.0.2 fetchLocalFile IPC**      | ✅ Done | Extension Host reads local files on behalf of webview iframe, bypassing CORS.                                           |
 | **v0.0.2 resolveNestedIframes**   | ✅ Done | Fetches local iframe `src` content and converts to `srcdoc`.                                                           |
 | **v0.0.2 enableNestedDocEditing** | ✅ Done | Activates `designMode` and mutation tracking inside child iframes.                                                     |
-| **v0.0.2 Path Traversal Guard**   | ✅ Done | Validates file paths stay within workspace roots for security.                                                         |
-| **v0.0.2 Test Coverage**          | ✅ Done | 49/49 regression & unit tests passing (`bun test`).                                                                    |
+| **v0.0.2 FileWatcher Module**     | ✅ Done | Replaced regex with `parse5` AST parser (`src/utils/fileWatcher.ts`) to traverse all AST nodes/attrs & directory tree hierarchy with zero blind spots. |
+| **v0.0.2 Test Coverage**          | ✅ Done | 57/57 regression & unit tests passing (`bun test`).                                                                    |
 
 ---
 
