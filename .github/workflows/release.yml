@@ -35,6 +35,9 @@ jobs:
       - name: Run Test Suite
         run: bun run test
 
+      - name: Clean Old Package Artifacts
+        run: rm -f *.vsix
+
       - name: Package Extension (.vsix)
         run: bun run package
 
