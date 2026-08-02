@@ -218,9 +218,6 @@ export function initSaveModule(
         setDirtyState(false);
         dirtyRuntimeIds.clear();
         setSaveStatus('saved');
-        if (message.taggedHtml && typeof (window as any).updateIframeContent === 'function') {
-          (window as any).updateIframeContent(message.taggedHtml);
-        }
       } else {
         setSaveStatus('error');
         if (typeof (window as any).showError === 'function') {
