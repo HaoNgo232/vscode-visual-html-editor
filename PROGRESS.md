@@ -34,6 +34,7 @@ High-density, token-efficient status summary for developers and AI agents.
 | **v0.0.2 enableNestedDocEditing** | ✅ Done | Activates `designMode` and mutation tracking inside child iframes.                                                     |
 | **v0.0.2 FileWatcher Module**     | ✅ Done | Replaced regex with `parse5` AST parser (`src/utils/fileWatcher.ts`) to traverse all AST nodes/attrs & directory tree hierarchy with zero blind spots. |
 | **v0.0.2 Test Coverage**          | ✅ Done | 57/57 regression & unit tests passing (`bun test`).                                                                    |
+| **v0.0.3 Package Release**        | ✅ Done | Version bump to 0.0.3, full test suite pass & `.vsix` package generation.                                             |
 
 ---
 
