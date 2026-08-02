@@ -210,4 +210,24 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
       expect(result).toContain('allow-scripts allow-same-origin allow-forms');
     });
   });
+
+  describe('15. User Edit Event Tracking & Script Mutation Isolation Tests', () => {
+    it('should rely on direct user input event listeners (input, beforeinput, change, paste, cut, drop, keyup)', () => {
+      const result = getWebviewContent('<div>Content</div>');
+
+      expect(result).toContain('addEventListener("input"');
+      expect(result).toContain('addEventListener("beforeinput"');
+      expect(result).toContain('addEventListener("change"');
+      expect(result).toContain('addEventListener("paste"');
+      expect(result).toContain('addEventListener("cut"');
+      expect(result).toContain('addEventListener("drop"');
+      expect(result).toContain('addEventListener("keyup"');
+    });
+
+    it('should not contain global MutationObserver on doc.body to prevent page JS mutations from auto-saving', () => {
+      const result = getWebviewContent('<div>Content</div>');
+
+      expect(result).not.toContain('new MutationObserver');
+    });
+  });
 });

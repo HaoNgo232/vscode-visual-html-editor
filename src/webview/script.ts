@@ -153,24 +153,16 @@ function registerMutationTracker(doc: Document) {
   };
 
   doc.addEventListener('input', (e) => markTargetDirty(e.target as Node));
+  doc.addEventListener('beforeinput', (e) => markTargetDirty(e.target as Node));
+  doc.addEventListener('change', (e) => markTargetDirty(e.target as Node));
+  doc.addEventListener('paste', (e) => markTargetDirty((e.target as Node) || doc.activeElement));
+  doc.addEventListener('cut', (e) => markTargetDirty((e.target as Node) || doc.activeElement));
+  doc.addEventListener('drop', (e) => markTargetDirty((e.target as Node) || doc.activeElement));
   doc.addEventListener('keyup', (e) => {
     if (!e.ctrlKey && !e.metaKey && e.key !== 'Control' && e.key !== 'Shift') {
       markTargetDirty((e.target as Node) || doc.activeElement);
     }
   });
-
-  if (window.MutationObserver) {
-    const observer = new MutationObserver((mutations) => {
-      for (let i = 0; i < mutations.length; i++) {
-        markTargetDirty(mutations[i].target);
-      }
-    });
-    observer.observe(doc.body, {
-      childList: true,
-      subtree: true,
-      characterData: true
-    });
-  }
 }
 
 // Error Boundary & Helpers
