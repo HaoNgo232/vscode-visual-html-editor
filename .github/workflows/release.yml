@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   release:
     name: Package & Publish GitHub Release
@@ -15,6 +19,11 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - name: Setup Bun Environment
         uses: oven-sh/setup-bun@v2
@@ -31,6 +40,9 @@ jobs:
 
       - name: Run Biome Linter
         run: bun run lint
+
+      - name: Build Extension Source
+        run: bun run build
 
       - name: Run Test Suite
         run: bun run test
