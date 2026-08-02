@@ -301,6 +301,48 @@ export function activate(context: vscode.ExtensionContext): void {
                 document = await vscode.workspace.openTextDocument(document.uri);
               }
 
+              const liveText = document.getText();
+              const hasExternalConflict =
+                originalSourceHtml !== null &&
+                liveText !== originalSourceHtml &&
+                !message.forceOverwrite;
+
+              if (hasExternalConflict) {
+                const choice = await vscode.window.showWarningMessage(
+                  `File "${fileName}" was modified outside of this editor. Which version would you like to keep?`,
+                  {
+                    modal: true,
+                    detail:
+                      'Another program, Git, or editor modified this file on disk. You can keep your visual edits or load the file from disk.'
+                  },
+                  'Keep My Visual Edits',
+                  'Load File From Disk'
+                );
+
+                if (choice === 'Load File From Disk') {
+                  originalSourceHtml = liveText;
+                  const reParsed = parseAndTagHtml(originalSourceHtml);
+                  currentOffsetMap = reParsed.offsetMap;
+                  panel.webview.postMessage({
+                    command: 'forceReload',
+                    taggedHtml: reParsed.taggedHtml
+                  });
+                  panel.webview.postMessage({
+                    command: 'saveCompleted',
+                    success: false,
+                    error: 'Loaded latest version from disk.'
+                  });
+                  return;
+                } else if (choice !== 'Keep My Visual Edits') {
+                  panel.webview.postMessage({
+                    command: 'saveCompleted',
+                    success: false,
+                    error: 'Save canceled.'
+                  });
+                  return;
+                }
+              }
+
               let finalHtml = message.fallbackHtml || message.html || '';
 
               if (
