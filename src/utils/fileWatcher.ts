@@ -158,15 +158,17 @@ export function extractRelatedFilePathsAST(htmlContent: string): string[] {
  */
 export const extractRelatedFilePaths = extractRelatedFilePathsAST;
 
+const isWindowsPlatform = typeof process !== 'undefined' && process.platform === 'win32';
+
 /**
  * Deterministically resolve a relative path against a base directory using path.resolve.
  */
 export function resolvePathDeterministic(baseDir: string, relPath: string): string {
   const normRel = relPath.replace(/\\/g, '/');
-  if (path.isAbsolute(normRel)) {
-    return path.normalize(normRel).toLowerCase();
-  }
-  return path.resolve(baseDir, normRel).toLowerCase();
+  const resolved = path.isAbsolute(normRel)
+    ? path.normalize(normRel)
+    : path.resolve(baseDir, normRel);
+  return isWindowsPlatform ? resolved.toLowerCase() : resolved;
 }
 
 /**
@@ -180,11 +182,18 @@ export function isUriRelated(
 ): boolean {
   if (!targetUri) return true;
 
-  const targetFsPath = targetUri.fsPath
-    ? path.normalize(targetUri.fsPath).toLowerCase()
+  const rawTargetFs = targetUri.fsPath ? path.normalize(targetUri.fsPath) : undefined;
+  const rawChangedFs = changedUri.fsPath ? path.normalize(changedUri.fsPath) : undefined;
+
+  const targetFsPath = rawTargetFs
+    ? isWindowsPlatform
+      ? rawTargetFs.toLowerCase()
+      : rawTargetFs
     : undefined;
-  const changedFsPath = changedUri.fsPath
-    ? path.normalize(changedUri.fsPath).toLowerCase()
+  const changedFsPath = rawChangedFs
+    ? isWindowsPlatform
+      ? rawChangedFs.toLowerCase()
+      : rawChangedFs
     : undefined;
 
   if (!changedFsPath) return false;
@@ -209,10 +218,8 @@ export function isUriRelated(
       if (changedFsPath === resolvedAbs) {
         return true;
       }
-      const cleanRel = relPath
-        .replace(/^(\.\/|\/)+/, '')
-        .replace(/\\/g, '/')
-        .toLowerCase();
+      const rawCleanRel = relPath.replace(/^(\.\/|\/)+/, '').replace(/\\/g, '/');
+      const cleanRel = isWindowsPlatform ? rawCleanRel.toLowerCase() : rawCleanRel;
       if (cleanRel && (changedFsPath.endsWith(cleanRel) || changedFsPath.includes(cleanRel))) {
         return true;
       }

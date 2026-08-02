@@ -254,8 +254,8 @@ function prepareDocumentHtml(htmlString: string, base: string | null): string {
       doc.head.insertBefore(scriptElem, doc.head.firstChild);
     }
 
-    const hasDoctype = /^\s*<!DOCTYPE/i.test(htmlString);
-    const doctypePrefix = hasDoctype ? '<!DOCTYPE html>\n' : '';
+    const doctypeMatch = htmlString.match(/^\s*(<!DOCTYPE[^>]*>)/i);
+    const doctypePrefix = doctypeMatch ? `${doctypeMatch[1]}\n` : '';
     return doctypePrefix + doc.documentElement.outerHTML;
   } catch (e) {
     console.warn('[Visual HTML Editor] DOMParser notice:', e);

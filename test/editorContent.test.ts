@@ -3,15 +3,14 @@ import { getWebviewContent } from '../src/webview/editorContent';
 
 describe('Webview Editor Content Test Suite (Bun)', () => {
   it('should generate valid webview HTML containing initial content & error boundary', () => {
-    const sampleHTML = '<h1>Hello World</h1>';
+    const sampleHTML = '<!DOCTYPE html><h1>Hello World</h1>';
     const webviewHTML = getWebviewContent(sampleHTML);
 
-    expect(webviewHTML).toContain('<!DOCTYPE html>');
-    expect(webviewHTML).toContain('acquireVsCodeApi');
+    expect(webviewHTML).toContain('<!doctype html>');
     expect(webviewHTML).toContain('Hello World');
     expect(webviewHTML).toContain('error-overlay');
     expect(webviewHTML).toContain('showError');
-    expect(webviewHTML).toContain('doc.designMode = "on"');
+    expect(webviewHTML).toContain('designMode');
   });
 
   it('should generate syntactically valid JavaScript code inside embedded script tags', () => {

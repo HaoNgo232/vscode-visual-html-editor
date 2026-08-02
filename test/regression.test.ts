@@ -230,4 +230,21 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
       expect(result).not.toContain('new MutationObserver');
     });
   });
+
+  describe('16. DOCTYPE Preservation & Case Sensitivity Tests', () => {
+    it('should preserve custom DOCTYPE declaration in generated webview JS', () => {
+      const customDoctypeHtml =
+        '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"><html><head></head><body><h1>Test</h1></body></html>';
+      const result = getWebviewContent(customDoctypeHtml);
+
+      expect(result).toContain('match(/^\\s*(<!DOCTYPE[^>]*>)/i)');
+    });
+
+    it('should dynamically preserve doc.doctype in getCleanHTML', () => {
+      const result = getWebviewContent('<div>Content</div>');
+
+      expect(result).toContain('doctypeNode = doc.doctype');
+      expect(result).toContain('doctypeNode.name');
+    });
+  });
 });

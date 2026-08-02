@@ -134,9 +134,12 @@ export function activate(context: vscode.ExtensionContext): void {
           if (!document) return;
           try {
             const newSourceHtml = document.getText();
+            const isWin = process.platform === 'win32';
             const isTargetDoc =
               !changedUri?.fsPath ||
-              changedUri.fsPath.toLowerCase() === document.uri.fsPath.toLowerCase();
+              (isWin
+                ? changedUri.fsPath.toLowerCase() === document.uri.fsPath.toLowerCase()
+                : changedUri.fsPath === document.uri.fsPath);
 
             if (isTargetDoc && newSourceHtml === originalSourceHtml) {
               return;

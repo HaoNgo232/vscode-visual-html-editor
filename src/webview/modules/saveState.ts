@@ -145,7 +145,15 @@ export function initSaveModule(
 
     sanitizeNode(cloneDoc);
 
-    const currentHTML = `<!DOCTYPE html>\n${cloneDoc.outerHTML}`;
+    const doctypeNode = doc.doctype;
+    let doctypePrefix = '';
+    if (doctypeNode) {
+      doctypePrefix = `<!DOCTYPE ${doctypeNode.name}${
+        doctypeNode.publicId ? ` PUBLIC "${doctypeNode.publicId}"` : ''
+      }${doctypeNode.systemId ? ` "${doctypeNode.systemId}"` : ''}>\n`;
+    }
+
+    const currentHTML = `${doctypePrefix}${cloneDoc.outerHTML}`;
     doc.documentElement.style.zoom = originalZoom;
 
     if (baseUri && doc.head && !doc.querySelector('base')) {
