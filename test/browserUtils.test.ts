@@ -8,15 +8,16 @@ describe('Browser Detection & Executable Finder Test Suite (Bun)', () => {
   });
 
   it('should respect custom executablePath from vscode configuration if file exists', () => {
+    const existingFile = process.execPath;
     const mockVscodeApi = {
       workspace: {
         getConfiguration: (_section: string) => ({
-          get: (key: string) => (key === 'executablePath' ? '/bin/sh' : '')
+          get: (key: string) => (key === 'executablePath' ? existingFile : '')
         })
       }
     };
     const result = findChromeExecutable(mockVscodeApi);
-    expect(result).toBe('/bin/sh');
+    expect(result).toBe(existingFile);
   });
 
   it('should ignore custom executablePath if path does not exist on disk', () => {
