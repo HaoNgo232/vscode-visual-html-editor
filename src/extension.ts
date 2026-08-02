@@ -4,6 +4,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { promisify } from 'node:util';
 import * as vscode from 'vscode';
+import { findChromeExecutable } from './utils/browserUtils';
 import { SourceFileWatcher } from './utils/fileWatcher';
 import { applySurgicalPatches, parseAndTagHtml } from './utils/htmlSurgicalMapper';
 import { normalizePath } from './utils/pathUtils';
@@ -11,45 +12,6 @@ import { isPathContained } from './utils/securityUtils';
 import { getWebviewContent } from './webview/editorContent';
 
 const execFileAsync = promisify(execFile);
-
-function findChromeExecutable(): string | null {
-  const platform = os.platform();
-  const candidates: string[] = [];
-
-  if (platform === 'linux') {
-    candidates.push(
-      '/usr/bin/google-chrome',
-      '/usr/bin/google-chrome-stable',
-      '/usr/bin/chromium',
-      '/usr/bin/chromium-browser'
-    );
-  } else if (platform === 'darwin') {
-    candidates.push(
-      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-      '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser',
-      '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'
-    );
-  } else if (platform === 'win32') {
-    const localAppData = process.env.LOCALAPPDATA || '';
-    const programFiles = process.env.PROGRAMFILES || 'C:\\Program Files';
-    const programFilesX86 = process.env['PROGRAMFILES(X86)'] || 'C:\\Program Files (x86)';
-
-    candidates.push(
-      path.join(programFiles, 'Google\\Chrome\\Application\\chrome.exe'),
-      path.join(programFilesX86, 'Google\\Chrome\\Application\\chrome.exe'),
-      path.join(localAppData, 'Google\\Chrome\\Application\\chrome.exe'),
-      path.join(programFiles, 'Microsoft\\Edge\\Application\\msedge.exe'),
-      path.join(programFilesX86, 'Microsoft\\Edge\\Application\\msedge.exe')
-    );
-  }
-
-  for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) {
-      return candidate;
-    }
-  }
-  return null;
-}
 
 function formatRawError(error: unknown): string {
   if (error === null || error === undefined) {
@@ -173,6 +135,7 @@ export function activate(context: vscode.ExtensionContext): void {
           html?: string;
           isDirty?: boolean;
           enabled?: boolean;
+          forceOverwrite?: boolean;
           changes?: Array<{ runtimeId: string; newInnerHTML: string }>;
           fallbackHtml?: string;
         }) => {

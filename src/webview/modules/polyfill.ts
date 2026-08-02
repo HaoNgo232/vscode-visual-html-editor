@@ -24,12 +24,26 @@ export function initFetchPolyfill(): void {
       !url.startsWith('blob:') &&
       !url.startsWith('vscode-webview:')
     ) {
-      return new Promise((resolve) => {
+      // ponytail: Local fetch polyfill uses 10s timeout and AbortSignal. Ceiling: Fixed 10s timeout for local IPC fetch. Upgrade path: Make timeout configurable or stream chunks.
+      return new Promise((resolve, reject) => {
         const requestId = `req_${Math.random().toString(36).substring(2, 11)}`;
+
+        let cleanup = () => {};
+
+        const timeoutId = setTimeout(() => {
+          cleanup();
+          resolve(
+            new Response('Local fetch request timeout', {
+              status: 408,
+              statusText: 'Request Timeout'
+            })
+          );
+        }, 10000);
+
         function handleResponse(event: MessageEvent) {
           const msg = event.data;
           if (msg && msg.command === 'fetchLocalFileResponse' && msg.requestId === requestId) {
-            window.removeEventListener('message', handleResponse);
+            cleanup();
             if (msg.success) {
               resolve(
                 new Response(msg.content, {
@@ -48,6 +62,28 @@ export function initFetchPolyfill(): void {
             }
           }
         }
+
+        cleanup = () => {
+          clearTimeout(timeoutId);
+          window.removeEventListener('message', handleResponse);
+          if (init?.signal) {
+            init.signal.removeEventListener('abort', handleAbort);
+          }
+        };
+
+        function handleAbort() {
+          cleanup();
+          reject(new DOMException('The user aborted a request.', 'AbortError'));
+        }
+
+        if (init?.signal) {
+          if (init.signal.aborted) {
+            handleAbort();
+            return;
+          }
+          init.signal.addEventListener('abort', handleAbort);
+        }
+
         window.addEventListener('message', handleResponse);
         window.parent.postMessage({ command: 'fetchLocalFile', requestId, relativePath: url }, '*');
       });

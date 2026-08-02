@@ -182,6 +182,8 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
       expect(result).toContain('fetchLocalFile');
       expect(result).toContain('fetchLocalFileResponse');
       expect(result).toContain('customFetch');
+      expect(result).toContain('Request Timeout');
+      expect(result).toContain('AbortError');
     });
 
     it('should mark and remove the injected fetch polyfill before fallback serialization', () => {

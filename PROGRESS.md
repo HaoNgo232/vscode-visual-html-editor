@@ -39,7 +39,8 @@ High-density, token-efficient status summary for developers and AI agents.
 | **v0.0.3 Fetch Polyfill Cleanup** | ✅ Done | Tagged injected fetch polyfill with `data-vhe-injected="fetch-polyfill"` and cleanup in `removeInjectedRuntimeNodes`.   |
 | **v0.0.3 Save Race Condition Guard**| ✅ Done| Filtered self-save file watcher echo events to preserve native `execCommand('undo')` history after Save.                |
 | **v0.0.3 Path Containment Guard** | ✅ Done | Added `isPathContained()` in `src/utils/securityUtils.ts` preventing path traversal & prefix bypass attacks.           |
-| **v0.0.3 Test Coverage**          | ✅ Done | 71/71 regression & unit tests passing (`bun test`).                                                                    |
+| **v0.0.3 Browser & Fetch Fixes**  | ✅ Done | Added dynamic PATH & setting browser lookup for PDF export; added 10s timeout & AbortSignal support to local fetch.   |
+| **v0.0.3 Test Coverage**          | ✅ Done | 89/89 regression & unit tests passing (`bun test`).                                                                    |
 
 ---
 

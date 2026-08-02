@@ -34,6 +34,16 @@
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "Visual HTML Editor",
+      "properties": {
+        "visualHtmlEditor.executablePath": {
+          "type": "string",
+          "default": "",
+          "description": "Custom path to Chrome, Chromium, Edge, or Brave binary for PDF export."
+        }
+      }
+    },
     "commands": [
       {
         "command": "visual-html-editor.open",
