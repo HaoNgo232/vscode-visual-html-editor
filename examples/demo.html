@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visual HTML Editor Demo</title>
+    <style>
+      :root {
+        --bg-color: #0f172a;
+        --card-bg: #1e293b;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --accent: #38bdf8;
+        --accent-hover: #0284c7;
+      }
+
+      body {
+        margin: 0;
+        padding: 40px 20px;
+        font-family:
+          "Segoe UI",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        box-sizing: border-box;
+      }
+
+      .container {
+        max-width: 800px;
+        width: 100%;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 6px 16px;
+        background: rgba(56, 189, 248, 0.1);
+        color: var(--accent);
+        border-radius: 9999px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        border: 1px solid rgba(56, 189, 248, 0.2);
+      }
+
+      h1 {
+        font-size: 42px;
+        font-weight: 800;
+        margin: 0 0 16px 0;
+        letter-spacing: -0.025em;
+        background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      p.subtitle {
+        font-size: 18px;
+        color: var(--text-muted);
+        margin: 0;
+        line-height: 1.6;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+      }
+
+      .card {
+        background: var(--card-bg);
+        border: 1px solid #334155;
+        border-radius: 16px;
+        padding: 24px;
+        transition:
+          transform 0.2s ease,
+          border-color 0.2s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-4px);
+        border-color: var(--accent);
+      }
+
+      .icon {
+        font-size: 32px;
+        margin-bottom: 16px;
+      }
+
+      .card h3 {
+        font-size: 20px;
+        margin: 0 0 8px 0;
+        color: var(--text-main);
+      }
+
+      .card p {
+        font-size: 14px;
+        color: var(--text-muted);
+        margin: 0;
+        line-height: 1.5;
+      }
+
+      .actions {
+        text-align: center;
+      }
+
+      .btn {
+        display: inline-block;
+        padding: 14px 32px;
+        background-color: var(--accent);
+        color: #0f172a;
+        font-weight: 700;
+        font-size: 16px;
+        border-radius: 12px;
+        text-decoration: none;
+        transition:
+          background-color 0.2s ease,
+          transform 0.1s ease;
+        cursor: pointer;
+        border: none;
+      }
+
+      .btn:hover {
+        background-color: var(--accent-hover);
+        color: #ffffff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <span class="badge">🚀 VS Code Extension</span>
+        <h1>Visual HTML Live Editor</h1>
+        <p class="subtitle">
+          Edit rendered HTML elements directly with WYSIWYG live preview and
+          save back to source code in real time.
+        </p>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <div class="icon">✏️</div>
+          <h3>Direct Text Editing</h3>
+          <p>
+            Click on any text element inside the editor to edit headings,
+            paragraphs, and lists directly.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="icon">⚡</div>
+          <h3>Surgical Source Patch</h3>
+          <p>
+            Preserves original source code formatting, comments, and structure
+            with surgical HTML AST patching.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="icon">📄</div>
+          <h3>One-Click PDF Export</h3>
+          <p>
+            Export your rendered HTML document to crisp PDF format with lossless
+            styling in one click.
+          </p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn">Get Started Now</button>
+      </div>
+    </div>
+  </body>
+</html>

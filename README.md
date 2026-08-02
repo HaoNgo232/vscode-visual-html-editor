@@ -2,6 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS%20Code-1.75%2B-blue)](https://code.visualstudio.com/)
+[![GitHub Release](https://img.shields.io/github/v/release/HaoNgo232/vscode-visual-html-editor?color=blue)](https://github.com/HaoNgo232/vscode-visual-html-editor/releases)
 
 Edit rendered static HTML directly inside VS Code without searching through deeply nested source code.
 
@@ -72,7 +73,7 @@ cd vscode-visual-html-editor
 bun install
 bun run package
 
-code --install-extension visual-html-live-editor-0.0.4.vsix --force
+code --install-extension *.vsix --force
 ```
 
 Requirements:

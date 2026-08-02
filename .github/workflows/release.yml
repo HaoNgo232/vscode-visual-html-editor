@@ -24,6 +24,11 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
+      - name: Sync package.json version with Git Tag
+        run: |
+          TAG_VERSION=${GITHUB_REF_NAME#v}
+          npm version $TAG_VERSION --no-git-tag-version
+
       - name: Run Biome Linter
         run: bun run lint
 
