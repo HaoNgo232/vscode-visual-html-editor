@@ -9,7 +9,7 @@ High-density, token-efficient status summary for developers and AI agents.
 | Milestone                          | Status  | High-Level Summary                                                                                                     |
 | :--------------------------------- | :-----: | :--------------------------------------------------------------------------------------------------------------------- |
 | **v0.0.1 Core Engine**             | ✅ Done | Visual text editing via `designMode` inside Webview `<iframe>`, `Ctrl+S` save.                                         |
-| **v0.0.1 Standalone Repo**         | ✅ Done | Extracted to `/home/hao/Desktop/labs/vscode-visual-html-editor`, English UI/docs.                                      |
+| **v0.0.1 Standalone Repo**         | ✅ Done | Extracted to standalone repository, English UI/docs.                                     |
 | **v0.0.1 Zoom System**             | ✅ Done | `Ctrl+Scroll`, `Ctrl++/-`, reset badge; non-polluting save protocol.                                                   |
 | **v0.0.1 TS + Bun Stack**          | ✅ Done | Rebuilt with TypeScript + Bun bundler (3ms) & Bun test runner (`bun test`, 19ms).                                      |
 | **v0.0.1 Template Decoupling**     | ✅ Done | Separated `template.html`, `style.css`, and `script.js` directly bundled into Node runtime.                            |

@@ -6,8 +6,8 @@ Instructions and guidelines for AI agents and human developers modifying or exte
 
 ## Workspace Context & Cross-References
 
-- **Parent Workspace Context**: This repository operates alongside the CV Generator workspace. See main workspace instructions at [`/home/hao/Desktop/labs/CV/AGENTS.md`](file:///home/hao/Desktop/labs/CV/AGENTS.md).
-- **Extension Repository**: Located at [`/home/hao/Desktop/labs/vscode-visual-html-editor`](file:///home/hao/Desktop/labs/vscode-visual-html-editor).
+- **Parent Workspace Context**: This repository operates alongside the CV Generator workspace.
+- **Extension Repository**: Visual HTML Editor VS Code extension repository.
 
 ---
 
