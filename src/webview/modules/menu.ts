@@ -97,7 +97,7 @@ export function initMenuModule(
             height = scrollH;
           }
         }
-      } catch (err) {
+      } catch (_err) {
         height = iframe.clientHeight || height;
       }
     }

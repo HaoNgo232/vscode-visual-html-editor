@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { parseAndTagHtml, applySurgicalPatches } from '../src/utils/htmlSurgicalMapper';
+import { applySurgicalPatches, parseAndTagHtml } from '../src/utils/htmlSurgicalMapper';
 import { getWebviewContent } from '../src/webview/editorContent';
 
 describe('Save Trigger Rollback & Fallback Protection Test Suite', () => {
