@@ -97,7 +97,11 @@ export function initMenuModule(
             height = scrollH;
           }
         }
-      } catch (_err) {
+      } catch (err) {
+        console.warn(
+          '[Export Dimensions] Failed to read iframe document height, falling back:',
+          err
+        );
         height = iframe.clientHeight || height;
       }
     }
