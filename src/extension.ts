@@ -173,12 +173,14 @@ export function activate(context: vscode.ExtensionContext): void {
                     success: true,
                     content
                   });
-                } catch (_err: any) {
+                } catch (err: any) {
+                  const errorMsg = formatRawError(err) || `File not found: ${message.relativePath}`;
+                  console.warn('[FetchLocalFile Error]', errorMsg);
                   postToWebview({
                     command: 'fetchLocalFileResponse',
                     requestId: message.requestId,
                     success: false,
-                    error: `File not found: ${message.relativePath}`
+                    error: errorMsg
                   });
                 }
               }
@@ -192,20 +194,18 @@ export function activate(context: vscode.ExtensionContext): void {
               break;
             }
             case 'reloadDocument': {
-              if (document) {
-                try {
-                  originalSourceHtml = document.getText();
-                  const reParsed = parseAndTagHtml(originalSourceHtml);
-                  currentOffsetMap = reParsed.offsetMap;
-                  postToWebview({
-                    command: 'forceReload',
-                    taggedHtml: reParsed.taggedHtml
-                  });
-                } catch (err: unknown) {
-                  vscode.window.showErrorMessage(
-                    `Failed to reload document from disk: ${formatRawError(err)}`
-                  );
-                }
+              try {
+                originalSourceHtml = document.getText();
+                const reParsed = parseAndTagHtml(originalSourceHtml);
+                currentOffsetMap = reParsed.offsetMap;
+                postToWebview({
+                  command: 'forceReload',
+                  taggedHtml: reParsed.taggedHtml
+                });
+              } catch (err: unknown) {
+                vscode.window.showErrorMessage(
+                  `Failed to reload document from disk: ${formatRawError(err)}`
+                );
               }
               break;
             }
@@ -241,7 +241,9 @@ export function activate(context: vscode.ExtensionContext): void {
                     ]);
 
                     // Cleanup temp HTML
-                    fs.promises.unlink(tempHtmlPath).catch(() => {});
+                    fs.promises.unlink(tempHtmlPath).catch((err) => {
+                      console.warn('[Cleanup Temp HTML Warning]', err);
+                    });
 
                     const openAction = 'Open PDF';
                     const choice = await vscode.window.showInformationMessage(
@@ -303,7 +305,9 @@ export function activate(context: vscode.ExtensionContext): void {
                       tempHtmlPath
                     ]);
 
-                    fs.promises.unlink(tempHtmlPath).catch(() => {});
+                    fs.promises.unlink(tempHtmlPath).catch((err) => {
+                      console.warn('[Cleanup Temp HTML Warning]', err);
+                    });
 
                     const openAction = 'Open Image';
                     const choice = await vscode.window.showInformationMessage(
