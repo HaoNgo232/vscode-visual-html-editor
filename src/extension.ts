@@ -194,6 +194,7 @@ export function activate(context: vscode.ExtensionContext): void {
               break;
             }
             case 'reloadDocument': {
+              if (!document) break;
               try {
                 originalSourceHtml = document.getText();
                 const reParsed = parseAndTagHtml(originalSourceHtml);
