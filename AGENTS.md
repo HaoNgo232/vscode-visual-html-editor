@@ -36,8 +36,11 @@ Instructions and guidelines for AI agents and human developers modifying or exte
    - Do **NOT** introduce telemetry, remote network requests, or external tracking dependencies.
 
 4. **Code Modification Rules**:
-   - Keep the codebase modular (`src/utils/`, `src/webview/`, `src/webview/modules/`, `src/extension.ts`).
-   - Before saving to disk, ensure transient styles (such as `style="zoom: ..."` applied during live preview) are temporarily stripped so source files are not polluted.
+   - Keep the codebase modular:
+     - `src/utils/`: AST surgical mapping (`htmlSurgicalMapper`, `htmlTypes`), typed IPC (`ipcProtocol`), security containment (`securityUtils`), file watching (`fileWatcher`), browser detection (`browserUtils`), path & debounce helpers (`pathUtils`, `debounceUtils`, `zoomUtils`).
+     - `src/webview/modules/`: DOM runtime (`documentRuntime`), state & save persistence (`saveState`), IPC fetch polyfill (`polyfill`), viewport, zoom, menu, history & command registry (`commandRegistry`).
+     - `src/extension.ts`: Extension Host lifecycle, IPC dispatcher, path containment validation, and file system bridge.
+   - Before saving to disk, ensure transient styles (such as `style="zoom: ..."` applied during live preview) and injected runtime nodes (`data-vhe-injected`) are temporarily stripped so source files are not polluted.
    - Always run unit tests (`bun test`) and compilation (`bun run build`) before packaging.
 
 ---
@@ -45,16 +48,19 @@ Instructions and guidelines for AI agents and human developers modifying or exte
 ## Commands & Workflows
 
 ### Building TypeScript Source
+
 ```bash
 bun run build
 ```
 
 ### Running Bun Unit Tests
+
 ```bash
 bun test
 ```
 
 ### Linting & Formatting (Biome)
+
 ```bash
 bun run lint
 bun run lint:fix
@@ -62,18 +68,21 @@ bun run format
 ```
 
 ### Packaging the Extension (.vsix)
+
 ```bash
 bun run package
 ```
 
 ### Installing the Packaged Extension Locally
+
 ```bash
-code --install-extension visual-html-live-editor-0.0.1.vsix --force
+code --install-extension visual-html-live-editor-0.0.7.vsix --force
 ```
 
 ---
 
 ## Testing Strategy
-- Unit tests reside in `test/*.test.ts`.
-- Powered by `bun:test` runner (`<20ms` total execution).
-- Every new utility function added to `src/utils/` must have accompanying unit tests in `test/`.
+
+- Unit tests reside in `test/*.test.ts` (102 tests across 20 files running in `<30ms`).
+- Powered by `bun:test` runner.
+- Every new utility function added to `src/utils/` or `src/webview/modules/` must have accompanying unit tests in `test/`.
