@@ -13,6 +13,7 @@ describe('Typed IPC Protocol Test Suite (Bun)', () => {
       { command: 'setDirty', isDirty: true, html: '<h1>Test</h1>' },
       { command: 'reloadDocument' },
       { command: 'exportPdf', html: '<html></html>' },
+      { command: 'exportImage', html: '<html></html>' },
       { command: 'save', html: '<html></html>', forceOverwrite: true },
       { command: 'saveSurgical', changes: [{ runtimeId: 'elem_1', newInnerHTML: 'Hi' }] }
     ];
@@ -36,6 +37,9 @@ describe('Typed IPC Protocol Test Suite (Bun)', () => {
         case 'exportPdf':
           commandsProcessed.push('exportPdf');
           break;
+        case 'exportImage':
+          commandsProcessed.push('exportImage');
+          break;
         case 'save':
           commandsProcessed.push(`save:${msg.forceOverwrite}`);
           break;
@@ -53,6 +57,7 @@ describe('Typed IPC Protocol Test Suite (Bun)', () => {
       'setDirty:true',
       'reloadDocument',
       'exportPdf',
+      'exportImage',
       'save:true',
       'saveSurgical:1'
     ]);

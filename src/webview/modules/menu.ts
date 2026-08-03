@@ -82,6 +82,28 @@ export function initMenuModule(
     execute: () => showHelpModal(false)
   });
 
+  function getExportDimensions(): { width: number; height: number } {
+    const iframe = document.getElementById('editor-frame') as HTMLIFrameElement;
+    let width = 1200;
+    let height = 800;
+
+    if (iframe) {
+      width = iframe.clientWidth || width;
+      try {
+        const doc = iframe.contentWindow?.document;
+        if (doc) {
+          const scrollH = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
+          if (scrollH > 0) {
+            height = scrollH;
+          }
+        }
+      } catch (err) {
+        height = iframe.clientHeight || height;
+      }
+    }
+    return { width, height };
+  }
+
   commandRegistry.register({
     id: 'export-pdf',
     group: 'document',
@@ -89,10 +111,13 @@ export function initMenuModule(
     title: 'Export to PDF',
     execute: () => {
       closeAllMenus();
+      const dims = getExportDimensions();
       if (vscode && getCleanHTML) {
         vscode.postMessage({
           command: 'exportPdf',
-          html: getCleanHTML()
+          html: getCleanHTML(),
+          width: dims.width,
+          height: dims.height
         });
       } else {
         const iframe = document.getElementById('editor-frame') as HTMLIFrameElement;
@@ -104,6 +129,25 @@ export function initMenuModule(
             console.error('[Export PDF Error]', err);
           }
         }
+      }
+    }
+  });
+
+  commandRegistry.register({
+    id: 'export-image',
+    group: 'document',
+    icon: 'file-media',
+    title: 'Export to Image',
+    execute: () => {
+      closeAllMenus();
+      const dims = getExportDimensions();
+      if (vscode && getCleanHTML) {
+        vscode.postMessage({
+          command: 'exportImage',
+          html: getCleanHTML(),
+          width: dims.width,
+          height: dims.height
+        });
       }
     }
   });

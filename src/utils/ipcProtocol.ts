@@ -27,6 +27,15 @@ export type ReloadDocumentMessage = {
 export type ExportPdfMessage = {
   command: 'exportPdf';
   html: string;
+  width?: number;
+  height?: number;
+};
+
+export type ExportImageMessage = {
+  command: 'exportImage';
+  html: string;
+  width?: number;
+  height?: number;
 };
 
 export type SaveMessage = {
@@ -50,6 +59,7 @@ export type WebviewToHostMessage =
   | SetDirtyMessage
   | ReloadDocumentMessage
   | ExportPdfMessage
+  | ExportImageMessage
   | SaveMessage
   | SaveSurgicalMessage;
 

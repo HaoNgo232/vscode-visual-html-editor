@@ -224,12 +224,18 @@ export function activate(context: vscode.ExtensionContext): void {
                   const tempDir = os.tmpdir();
                   const tempHtmlPath = path.join(tempDir, `export-${Date.now()}.html`);
 
+                  const exportWidth = message.width && message.width > 0 ? message.width : 1200;
+                  const exportHeight = message.height && message.height > 0 ? message.height : 1600;
+
                   if (chromeBin) {
                     await fs.promises.writeFile(tempHtmlPath, message.html, 'utf8');
                     await execFileAsync(chromeBin, [
                       '--headless',
                       '--no-sandbox',
                       '--disable-gpu',
+                      '--no-pdf-header-footer',
+                      '--emulate-media-type=screen',
+                      `--window-size=${exportWidth},${exportHeight}`,
                       `--print-to-pdf=${saveUri.fsPath}`,
                       tempHtmlPath
                     ]);
@@ -258,6 +264,62 @@ export function activate(context: vscode.ExtensionContext): void {
                   }
                 } catch (err: any) {
                   vscode.window.showErrorMessage(`Failed to export PDF: ${err.message}`);
+                }
+              }
+              break;
+            }
+            case 'exportImage': {
+              if (message.html) {
+                try {
+                  const defaultImgName = fileName.replace(/\.html$/i, '.png');
+                  const saveUri = await vscode.window.showSaveDialog({
+                    defaultUri: vscode.Uri.joinPath(fileFolder, defaultImgName),
+                    filters: {
+                      'PNG Image': ['png'],
+                      'JPEG Image': ['jpg', 'jpeg']
+                    },
+                    title: 'Export HTML to Image'
+                  });
+
+                  if (!saveUri) return;
+
+                  const chromeBin = findChromeExecutable();
+                  const tempDir = os.tmpdir();
+                  const tempHtmlPath = path.join(tempDir, `export-${Date.now()}.html`);
+
+                  const exportWidth = message.width && message.width > 0 ? message.width : 1200;
+                  const exportHeight = message.height && message.height > 0 ? message.height : 1600;
+
+                  if (chromeBin) {
+                    await fs.promises.writeFile(tempHtmlPath, message.html, 'utf8');
+                    await execFileAsync(chromeBin, [
+                      '--headless',
+                      '--no-sandbox',
+                      '--disable-gpu',
+                      '--hide-scrollbars',
+                      '--force-device-scale-factor=2',
+                      `--window-size=${exportWidth},${exportHeight}`,
+                      `--screenshot=${saveUri.fsPath}`,
+                      tempHtmlPath
+                    ]);
+
+                    fs.promises.unlink(tempHtmlPath).catch(() => {});
+
+                    const openAction = 'Open Image';
+                    const choice = await vscode.window.showInformationMessage(
+                      `✅ Exported Image: ${path.basename(saveUri.fsPath)}`,
+                      openAction
+                    );
+                    if (choice === openAction) {
+                      vscode.env.openExternal(saveUri);
+                    }
+                  } else {
+                    vscode.window.showErrorMessage(
+                      'Exporting to image requires Google Chrome or Chromium installed on your system.'
+                    );
+                  }
+                } catch (err: any) {
+                  vscode.window.showErrorMessage(`Failed to export image: ${err.message}`);
                 }
               }
               break;

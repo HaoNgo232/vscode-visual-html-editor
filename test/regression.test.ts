@@ -128,12 +128,19 @@ describe('Regression & Edge Cases Test Suite (Bun)', () => {
     });
   });
 
-  describe('9. Export PDF Protocol Tests', () => {
+  describe('9. Export PDF & Image Protocol Tests', () => {
     it('should contain export-pdf command registration and print trigger', () => {
       const result = getWebviewContent('<div>Content</div>');
 
       expect(result).toContain('export-pdf');
       expect(result).toContain('print()');
+    });
+
+    it('should contain export-image command registration and exportImage handler', () => {
+      const result = getWebviewContent('<div>Content</div>');
+
+      expect(result).toContain('export-image');
+      expect(result).toContain('exportImage');
     });
   });
 
